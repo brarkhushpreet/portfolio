@@ -1,0 +1,82 @@
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import { headers } from "next/headers";
+import "./globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export async function generateMetadata(): Promise<Metadata> {
+  const requestHeaders = await headers();
+  const forwardedHost = requestHeaders.get("x-forwarded-host");
+  const headerHost = forwardedHost ?? requestHeaders.get("host") ?? "localhost:3000";
+  const safeHost = /^[a-z0-9.-]+(?::\d+)?$/i.test(headerHost)
+    ? headerHost
+    : "localhost:3000";
+  const forwardedProtocol = requestHeaders.get("x-forwarded-proto");
+  const protocol =
+    forwardedProtocol === "http" || forwardedProtocol === "https"
+      ? forwardedProtocol
+      : safeHost.startsWith("localhost")
+        ? "http"
+        : "https";
+  const origin = `${protocol}://${safeHost}`;
+  const socialCard = `${origin}/og.png`;
+
+  return {
+    metadataBase: new URL(origin),
+    title: "Khushpreet Singh — Software Engineer",
+    description:
+      "Portfolio of Khushpreet Singh, a product-minded software engineer building fast, thoughtful web experiences.",
+    keywords: [
+      "Khushpreet Singh",
+      "Software Engineer",
+      "Frontend Engineer",
+      "Next.js Developer",
+      "React Developer",
+    ],
+    authors: [{ name: "Khushpreet Singh" }],
+    openGraph: {
+      title: "Khushpreet Singh — Software Engineer",
+      description:
+        "Frontend engineer. Interface obsessive. Explore selected work, experience, and experiments.",
+      type: "website",
+      images: [
+        {
+          url: socialCard,
+          width: 1672,
+          height: 939,
+          alt: "Khushpreet Singh — Frontend Engineer. Interface Obsessive.",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Khushpreet Singh — Software Engineer",
+      description:
+        "Frontend engineer. Interface obsessive. Explore selected work, experience, and experiments.",
+      images: [socialCard],
+    },
+  };
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        {children}
+      </body>
+    </html>
+  );
+}
