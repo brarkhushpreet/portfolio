@@ -32,36 +32,38 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase: new URL(origin),
-    title: "Khushpreet Singh — Software Engineer",
+    title: "Khushpreet Singh — Full-Stack Software Engineer",
     description:
-      "Portfolio of Khushpreet Singh, a product-minded software engineer building fast, thoughtful web experiences.",
+      "Khushpreet Singh builds production software from interface to infrastructure—full-stack products, backend systems, AI workflows, and AWS deployments.",
     keywords: [
       "Khushpreet Singh",
       "Software Engineer",
+      "Full-Stack Engineer",
+      "Backend Engineer",
       "Frontend Engineer",
       "Next.js Developer",
-      "React Developer",
+      "AWS Developer",
     ],
     authors: [{ name: "Khushpreet Singh" }],
     openGraph: {
-      title: "Khushpreet Singh — Software Engineer",
+      title: "Khushpreet Singh — Full-Stack Software Engineer",
       description:
-        "Frontend engineer. Interface obsessive. Explore selected work, experience, and experiments.",
+        "Interface to infrastructure. Explore full-stack products, backend systems, AI workflows, and production deployments.",
       type: "website",
       images: [
         {
           url: socialCard,
           width: 1672,
           height: 939,
-          alt: "Khushpreet Singh — Frontend Engineer. Interface Obsessive.",
+          alt: "Khushpreet Singh — Interface to Infrastructure",
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Khushpreet Singh — Software Engineer",
+      title: "Khushpreet Singh — Full-Stack Software Engineer",
       description:
-        "Frontend engineer. Interface obsessive. Explore selected work, experience, and experiments.",
+        "Interface to infrastructure. Full-stack products, backend systems, AI workflows, and production deployments.",
       images: [socialCard],
     },
   };

@@ -29,8 +29,13 @@ test("server-renders Khushpreet's portfolio", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>Khushpreet Singh — Software Engineer<\/title>/i);
-  assert.match(html, /Frontend engineer\./);
+  assert.match(
+    html,
+    /<title>Khushpreet Singh — Full-Stack Software Engineer<\/title>/i,
+  );
+  assert.match(html, /interface to infrastructure/i);
+  assert.match(html, /Zyastra Agent Platform/);
+  assert.match(html, /AstraSAR Voice Runtime/);
   assert.match(html, /EchoPass/);
   assert.match(html, /Software Development Engineer I/);
   assert.match(html, /khushbrar@gmail\.com/);
