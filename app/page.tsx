@@ -1,19 +1,6 @@
 "use client";
 
-import {
-  ArrowDown,
-  ArrowUpRight,
-  Cloud,
-  Code2,
-  Download,
-  GitBranch,
-  Mail,
-  Moon,
-  ServerCog,
-  Sparkles,
-  Sun,
-  Workflow,
-} from "lucide-react";
+import { ArrowUpRight, Check, Copy } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
@@ -21,113 +8,145 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  type PointerEvent as ReactPointerEvent,
+  type PointerEvent,
 } from "react";
 
 type Project = {
-  index: string;
+  id: string;
   title: string;
-  type: string;
+  shortTitle: string;
+  subtitle: string;
   year: string;
+  status: string;
+  discipline: string;
   description: string;
+  story: string;
+  highlights: string[];
   stack: string[];
   link: string;
   linkLabel: string;
-  confidential?: boolean;
+  private?: boolean;
+  visual: "agent" | "voice" | "sonar" | "chat" | "movie" | "blog";
 };
 
 const projects: Project[] = [
   {
-    index: "01",
+    id: "zyastra",
     title: "Zyastra Agent Platform",
-    type: "AI product / full-stack / infrastructure",
+    shortTitle: "Zyastra",
+    subtitle: "AI agents, from dashboard to deployment",
     year: "2025—Now",
+    status: "In production",
+    discipline: "Full-stack · AI · Cloud",
     description:
-      "A production AI-agent platform spanning a Next.js product surface, Express APIs, Prisma/PostgreSQL, Redis queues, S3, secure embeds, and automated AWS releases.",
-    stack: ["Next.js", "Express", "Prisma", "BullMQ", "Redis", "AWS"],
+      "A production AI-agent platform spanning a Next.js product surface, Express APIs, PostgreSQL, background workers, secure embeds, and AWS releases.",
+    story:
+      "I work across the whole system: shaping complex operator interfaces, designing APIs and data flows, orchestrating long-running jobs, and making releases repeatable. The result is software that feels considered on screen and remains dependable after it leaves the browser.",
+    highlights: ["73% faster key workflows", "30% lower API latency", "40% fewer release issues"],
+    stack: ["Next.js", "Express", "Prisma", "PostgreSQL", "BullMQ", "Redis", "AWS"],
     link: "https://zyvka.com/Zy-VMS",
-    linkLabel: "View ecosystem",
-    confidential: true,
+    linkLabel: "View product ecosystem",
+    private: true,
+    visual: "agent",
   },
   {
-    index: "02",
+    id: "astrasar",
     title: "AstraSAR Voice Runtime",
-    type: "Realtime AI / backend / deployment",
+    shortTitle: "AstraSAR",
+    subtitle: "Realtime voice infrastructure at production scale",
     year: "2025—Now",
+    status: "In production",
+    discipline: "Realtime AI · Backend",
     description:
-      "A realtime voice-agent runtime joining telephony, LiveKit, Sarvam, Node.js and Python, deployed as a multi-worker production system with repeatable CI/CD.",
-    stack: ["Node.js", "Python", "LiveKit", "WebSockets", "PM2", "CI/CD"],
+      "A voice-agent runtime joining telephony, LiveKit, Sarvam, Node.js, and Python across multiple production servers.",
+    story:
+      "The runtime coordinates calls, streaming audio, AI responses, and worker lifecycles without losing the conversational beat. I built deployment automation and PM2 process topology across four runtimes, giving the team sixteen concurrent voice workers with a predictable release path.",
+    highlights: ["16 concurrent workers", "4 isolated runtimes", "Automated multi-server delivery"],
+    stack: ["Node.js", "Python", "LiveKit", "WebSockets", "PM2", "GitHub Actions"],
     link: "https://zyvka.com/Zy-VMS",
-    linkLabel: "View product",
-    confidential: true,
+    linkLabel: "View product ecosystem",
+    private: true,
+    visual: "voice",
   },
   {
-    index: "03",
+    id: "echopass",
     title: "EchoPass / AMS",
-    type: "Product / audio systems",
+    shortTitle: "EchoPass",
+    subtitle: "Attendance verified through ultrasonic presence",
     year: "2025",
+    status: "Capstone",
+    discipline: "Product · Audio systems",
     description:
       "A proof-of-presence attendance system that generates randomized ultrasonic tokens and verifies them through realtime browser audio analysis.",
+    story:
+      "EchoPass turns the room itself into a temporary credential. A teacher broadcasts a short-lived inaudible signature, student devices analyse the signal locally, and the platform validates time, session, and identity before recording attendance.",
+    highlights: ["Short-lived audio tokens", "Browser-side signal analysis", "Role-based session control"],
     stack: ["Next.js", "Web Audio", "PostgreSQL", "NextAuth"],
     link: "https://github.com/brarkhushpreet/AMS",
     linkLabel: "View repository",
+    visual: "sonar",
   },
   {
-    index: "04",
+    id: "chat",
     title: "Realtime Chat",
-    type: "Realtime product",
+    shortTitle: "Realtime Chat",
+    subtitle: "Fast conversations with persistent context",
     year: "2024",
+    status: "Shipped",
+    discipline: "Realtime product",
     description:
       "A high-concurrency messaging application with bidirectional events, secure sessions, persistent conversations, and optimized database access.",
+    story:
+      "Designed as a full product rather than a Socket.IO demo: authenticated rooms, resilient message history, responsive layouts, presence state, and a backend data model built for fast conversation retrieval.",
+    highlights: ["Bidirectional events", "Persistent history", "Secure authenticated rooms"],
     stack: ["Next.js", "Socket.IO", "PostgreSQL", "Prisma"],
     link: "https://github.com/brarkhushpreet/Chat-Application-nextjs",
     linkLabel: "View repository",
+    visual: "chat",
   },
   {
-    index: "05",
+    id: "movies",
     title: "Movie Explorer",
-    type: "Discovery / AI",
+    shortTitle: "Movie Explorer",
+    subtitle: "Discovery shaped by data and AI",
     year: "2024",
+    status: "Live",
+    discipline: "Discovery · AI",
     description:
       "A responsive movie-discovery product combining TMDB data with Gemini-powered recommendations and a fast browsing experience.",
-    stack: ["Next.js", "TMDB", "Gemini AI", "Tailwind"],
+    story:
+      "The interface makes a large catalogue feel calm: visual browsing, useful details, quick search, and AI-assisted suggestions that help people move from an idea to something worth watching.",
+    highlights: ["Live TMDB catalogue", "AI recommendations", "Responsive discovery flows"],
+    stack: ["Next.js", "TMDB", "Gemini AI", "Tailwind CSS"],
     link: "https://movie-website-gules.vercel.app",
     linkLabel: "Visit live site",
+    visual: "movie",
   },
   {
-    index: "06",
+    id: "blog",
     title: "Developer Blog",
-    type: "Publishing",
+    shortTitle: "Developer Blog",
+    subtitle: "A focused place for technical notes",
     year: "2024",
+    status: "Archive",
+    discipline: "Publishing",
     description:
-      "A focused publishing experience for technical notes, experiments, and lessons gathered while building real products.",
+      "A minimal publishing experience for technical notes, experiments, and lessons gathered while building real products.",
+    story:
+      "Built to keep the reading experience ahead of the interface. The content system, responsive rhythm, and small details make it easy to publish and comfortable to spend time with.",
+    highlights: ["Content-first layout", "Responsive typography", "Simple publishing workflow"],
     stack: ["JavaScript", "Content", "Responsive UI"],
     link: "https://github.com/brarkhushpreet/blog",
     linkLabel: "View repository",
+    visual: "blog",
   },
 ];
 
 const capabilities = [
-  {
-    icon: Code2,
-    title: "Product interfaces",
-    copy: "Responsive systems, complex dashboards, accessible interactions, and performance work that users can feel.",
-  },
-  {
-    icon: ServerCog,
-    title: "Backends & APIs",
-    copy: "Express services, auth, PostgreSQL, Prisma, WebSockets, background jobs, and third-party integrations.",
-  },
-  {
-    icon: Workflow,
-    title: "AI & realtime systems",
-    copy: "Voice agents, queues, worker orchestration, audio pipelines, embeddings, evaluations, and live state.",
-  },
-  {
-    icon: Cloud,
-    title: "Cloud & delivery",
-    copy: "AWS EC2, RDS, S3, PM2, GitHub Actions, migrations, environment wiring, and repeatable deployments.",
-  },
+  ["01", "Product interfaces", "Responsive dashboards, accessible interactions, and performance work that users can feel."],
+  ["02", "Backends & APIs", "Express services, auth, PostgreSQL, Prisma, WebSockets, jobs, and third-party integrations."],
+  ["03", "AI & realtime", "Voice agents, worker orchestration, queues, audio pipelines, evaluations, and live state."],
+  ["04", "Cloud & delivery", "AWS EC2, RDS, S3, PM2, migrations, environment wiring, and repeatable releases."],
 ];
 
 const experience = [
@@ -135,49 +154,190 @@ const experience = [
     date: "May 2025 — Present",
     role: "Software Development Engineer I",
     company: "Zyvka HR Tech",
-    description:
-      "Building and operating AI products across frontend, backend, realtime workers, databases, and AWS infrastructure.",
+    copy: "Building and operating AI products across frontend, backend, realtime workers, databases, and AWS infrastructure.",
   },
   {
     date: "Jul 2024 — Apr 2025",
     role: "Software Development Engineer Intern",
     company: "Zyvka HR Tech",
-    description:
-      "Migrated a legacy product to React 19, shipped realtime chat, and automated production deployment workflows.",
+    copy: "Migrated a legacy product to React 19, shipped realtime chat, and automated production deployment workflows.",
   },
   {
     date: "Jun 2023 — Jul 2023",
     role: "Summer Internship Trainee",
     company: "Solitaire Infosys",
-    description:
-      "Built a practical MERN foundation through full-stack applications and API-driven product work.",
+    copy: "Built a practical MERN foundation through full-stack applications and API-driven product work.",
   },
 ];
 
-const loaderPhases = [
-  "WAKING THE INTERFACE",
-  "CHECKING THE WORKERS",
-  "CONNECTING THE CLOUD",
-  "READY TO SHIP",
-];
+function NamePlate() {
+  const plate = useRef<HTMLDivElement>(null);
+  const dragStart = useRef({ x: 0, y: 0, px: 0, py: 0 });
+  const [dragging, setDragging] = useState(false);
+  const [measure, setMeasure] = useState("534 × 96");
 
-const scrambleCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&";
+  const move = (event: PointerEvent<HTMLButtonElement>) => {
+    if (!dragging || !plate.current) return;
+    const dx = event.clientX - dragStart.current.px;
+    const dy = event.clientY - dragStart.current.py;
+    const x = Math.max(-14, Math.min(14, dragStart.current.x + dx * 0.085));
+    const y = Math.max(-10, Math.min(10, dragStart.current.y + dy * 0.07));
+    const stretch = Math.max(0.92, Math.min(1.08, 1 + dx * 0.0008));
+    plate.current.style.setProperty("--warp-x", `${x}deg`);
+    plate.current.style.setProperty("--warp-y", `${y}px`);
+    plate.current.style.setProperty("--stretch", String(stretch));
+    plate.current.dataset.x = String(x);
+    plate.current.dataset.y = String(y);
+    plate.current.dataset.stretch = String(stretch);
+    setMeasure(`${Math.round(534 * stretch)} × ${Math.round(96 + Math.abs(y))}`);
+  };
+
+  const start = (event: PointerEvent<HTMLButtonElement>) => {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setDragging(true);
+    dragStart.current = {
+      x: Number(plate.current?.dataset.x ?? 0),
+      y: Number(plate.current?.dataset.y ?? 0),
+      px: event.clientX,
+      py: event.clientY,
+    };
+  };
+
+  const end = () => setDragging(false);
+
+  const reset = () => {
+    if (!plate.current) return;
+    plate.current.style.setProperty("--warp-x", "0deg");
+    plate.current.style.setProperty("--warp-y", "0px");
+    plate.current.style.setProperty("--stretch", "1");
+    plate.current.dataset.x = "0";
+    plate.current.dataset.y = "0";
+    plate.current.dataset.stretch = "1";
+    setMeasure("534 × 96");
+  };
+
+  return (
+    <div className="name-plate" ref={plate} onDoubleClick={reset}>
+      <h1 aria-label="Khushpreet Singh">
+        <span className="name-line">khushpreet</span>
+        <span className="name-line">singh</span>
+      </h1>
+      <span className="plate-hint">drag the points · double-click to reset</span>
+      <span className="plate-measure">{measure}</span>
+      {["a", "b", "c", "d"].map((handle) => (
+        <button
+          key={handle}
+          className={`plate-handle handle-${handle}`}
+          onPointerDown={start}
+          onPointerMove={move}
+          onPointerUp={end}
+          onPointerCancel={end}
+          aria-label="Drag to reshape the name"
+        />
+      ))}
+    </div>
+  );
+}
+
+function ProjectVisual({ variant, title }: { variant: Project["visual"]; title: string }) {
+  return (
+    <div className={`project-visual visual-${variant}`} aria-label={`${title} system illustration`} role="img">
+      <div className="visual-chrome"><span /><span>{title}</span><span>live</span></div>
+      {variant === "agent" && (
+        <div className="agent-board">
+          <div className="agent-main"><span>agent / outbound-04</span><strong>Planning the next best action</strong><i /></div>
+          <div className="agent-rail">
+            {[["calls", "148"], ["queue", "06"], ["success", "92%"]].map(([label, value]) => <p key={label}><span>{label}</span><strong>{value}</strong></p>)}
+          </div>
+          <div className="agent-flow"><i /><i /><i /><i /><i /></div>
+        </div>
+      )}
+      {variant === "voice" && (
+        <div className="voice-board">
+          <div className="waveform">{Array.from({ length: 34 }).map((_, index) => <i key={index} style={{ "--bar": `${22 + ((index * 37) % 70)}%` } as React.CSSProperties} />)}</div>
+          <div className="voice-meta"><span>caller connected</span><strong>00:02:18</strong><span>latency 184ms</span></div>
+          <div className="worker-grid">{Array.from({ length: 16 }).map((_, index) => <i key={index} className={index < 11 ? "busy" : ""}>{String(index + 1).padStart(2, "0")}</i>)}</div>
+        </div>
+      )}
+      {variant === "sonar" && (
+        <div className="sonar-board">
+          <div className="sonar-ring"><i /><i /><i /><i /></div>
+          <div className="sonar-readout"><span>19.2 kHz</span><strong>PRESENCE VERIFIED</strong><span>token expires / 00:08</span></div>
+        </div>
+      )}
+      {variant === "chat" && (
+        <div className="chat-board">
+          <div className="contact-list">{["KS", "AR", "DS", "MK"].map((name, index) => <p key={name} className={index === 0 ? "selected" : ""}><i>{name}</i><span>conversation {index + 1}</span></p>)}</div>
+          <div className="conversation"><span>Shipped the new worker flow.</span><span>Nice — checking the deployment now.</span><span>Production is healthy ✓</span></div>
+        </div>
+      )}
+      {variant === "movie" && (
+        <div className="movie-board">
+          <p><small>Recommended tonight</small><strong>Find something<br />worth watching.</strong></p>
+          <div className="poster-stack"><i>01</i><i>02</i><i>03</i></div>
+          <span className="movie-score">AI MATCH · 94%</span>
+        </div>
+      )}
+      {variant === "blog" && (
+        <div className="blog-board">
+          <small>FIELD NOTES / 04</small>
+          <h4>Building systems<br />that keep their promises.</h4>
+          <div>{Array.from({ length: 7 }).map((_, index) => <i key={index} />)}</div>
+          <span>8 MIN READ →</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProjectEntry({ project, open, onToggle }: { project: Project; open: boolean; onToggle: () => void }) {
+  return (
+    <article className={`project-item ${open ? "is-open" : ""}`}>
+      <button className="project-trigger" onClick={onToggle} aria-expanded={open} aria-controls={`${project.id}-detail`}>
+        <span className="project-title">{project.shortTitle}</span>
+        <span className="project-subtitle">{project.subtitle}</span>
+        <span className="project-arrow" aria-hidden="true">↗</span>
+        <time>{project.year}</time>
+      </button>
+      <div className="project-reveal" id={`${project.id}-detail`}>
+        <div className="project-reveal-inner">
+          <div className="case-head">
+            <h3>{project.title}</h3>
+            <button onClick={onToggle} type="button">close <span>×</span></button>
+          </div>
+          <div className="case-meta"><span>{project.discipline}</span><span>{project.year}</span><span>{project.status}</span></div>
+          <ProjectVisual variant={project.visual} title={project.shortTitle} />
+          <div className="case-copy">
+            <h4>{project.description}</h4>
+            <p>{project.story}</p>
+          </div>
+          <div className="case-facts">
+            {project.highlights.map((highlight, index) => <p key={highlight}><span>0{index + 1}</span>{highlight}</p>)}
+          </div>
+          <div className="case-bottom">
+            <div className="case-stack">{project.stack.map((item) => <span key={item}>{item}</span>)}</div>
+            <a href={project.link} target="_blank" rel="noreferrer">{project.linkLabel} <ArrowUpRight size={14} /></a>
+          </div>
+          {project.private && <p className="private-note">Selected details only — production company work.</p>}
+        </div>
+      </div>
+    </article>
+  );
+}
 
 export default function Home() {
   const root = useRef<HTMLElement>(null);
-  const loaderNumber = useRef<HTMLSpanElement>(null);
-  const loaderPhase = useRef<HTMLSpanElement>(null);
-  const cursor = useRef<HTMLDivElement>(null);
-  const scrambleTimers = useRef<Record<string, number>>({});
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const loaderCount = useRef<HTMLSpanElement>(null);
+  const [activeProject, setActiveProject] = useState<number | null>(0);
+  const [time, setTime] = useState("");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    const storedTheme = window.localStorage.getItem("portfolio-theme");
-    const prefersLight = window.matchMedia("(prefers-color-scheme: light)").matches;
-    const initialTheme =
-      storedTheme === "light" || (!storedTheme && prefersLight) ? "light" : "dark";
-    setTheme(initialTheme);
-    document.documentElement.dataset.theme = initialTheme;
+    const stored = window.localStorage.getItem("portfolio-theme");
+    const next = stored === "dark" ? "dark" : "light";
+    setTheme(next);
+    document.documentElement.dataset.theme = next;
   }, []);
 
   useEffect(() => {
@@ -185,583 +345,179 @@ export default function Home() {
     window.localStorage.setItem("portfolio-theme", theme);
   }, [theme]);
 
-  useLayoutEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    const context = gsap.context(() => {
-      if (reducedMotion) {
-        gsap.set(".site-loader", { display: "none" });
-        gsap.set(".hero-word", { yPercent: 0 });
-        gsap.set(".hero-enter", { opacity: 1, y: 0 });
-      } else {
-        document.body.classList.add("is-loading");
-        const counter = { value: 0 };
-        const intro = gsap.timeline({
-          defaults: { ease: "power3.inOut" },
-          onComplete: () => document.body.classList.remove("is-loading"),
-        });
-
-        gsap.set(".hero-word", { yPercent: 115 });
-        gsap.set(".hero-enter", { opacity: 0, y: 18 });
-        gsap.set(".hero-grid-line", { scale: 0 });
-        gsap.set(".boot-cell", { scaleY: 0, transformOrigin: "bottom" });
-
-        intro
-          .to(".boot-cell", {
-            scaleY: 1,
-            duration: 0.42,
-            stagger: { each: 0.025, from: "random" },
-            ease: "power2.out",
-          })
-          .to(
-            counter,
-            {
-              value: 100,
-              duration: 1.45,
-              ease: "power2.inOut",
-              onUpdate: () => {
-                const value = Math.round(counter.value);
-                if (loaderNumber.current) {
-                  loaderNumber.current.textContent = String(value).padStart(3, "0");
-                }
-                if (loaderPhase.current) {
-                  const phaseIndex = Math.min(
-                    loaderPhases.length - 1,
-                    Math.floor(value / 26),
-                  );
-                  loaderPhase.current.textContent = loaderPhases[phaseIndex];
-                }
-              },
-            },
-            0.1,
-          )
-          .to(".loader-progress-fill", { scaleX: 1, duration: 1.45 }, 0.1)
-          .to(".loader-log span", {
-            opacity: 1,
-            x: 0,
-            stagger: 0.12,
-            duration: 0.35,
-          }, 0.2)
-          .to(".site-loader", {
-            yPercent: -100,
-            duration: 0.85,
-            ease: "power4.inOut",
-          })
-          .to(".hero-grid-line", {
-            scale: 1,
-            duration: 0.7,
-            stagger: 0.025,
-            ease: "power2.out",
-          }, "-=0.55")
-          .to(".hero-word", {
-            yPercent: 0,
-            duration: 0.9,
-            stagger: 0.07,
-            ease: "power4.out",
-          }, "-=0.62")
-          .to(".hero-enter", {
-            opacity: 1,
-            y: 0,
-            duration: 0.65,
-            stagger: 0.055,
-          }, "-=0.58");
-      }
-
-      gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((element) => {
-        const line = element.querySelector<HTMLElement>(".reveal-line");
-        gsap.fromTo(
-          element,
-          {
-            opacity: reducedMotion ? 1 : 0,
-            y: reducedMotion ? 0 : 42,
-            clipPath: reducedMotion ? "inset(0)" : "inset(0 0 24% 0)",
-          },
-          {
-            opacity: 1,
-            y: 0,
-            clipPath: "inset(0)",
-            duration: 0.9,
-            ease: "power3.out",
-            scrollTrigger: {
-              trigger: element,
-              start: "top 88%",
-              once: true,
-            },
-          },
-        );
-
-        if (line && !reducedMotion) {
-          gsap.fromTo(
-            line,
-            { scaleX: 0 },
-            {
-              scaleX: 1,
-              duration: 0.85,
-              ease: "power3.inOut",
-              scrollTrigger: {
-                trigger: element,
-                start: "top 88%",
-                once: true,
-              },
-            },
-          );
-        }
-      });
-
-      if (!reducedMotion) {
-        gsap.to(".hero-orb", {
-          y: -18,
-          x: 10,
-          rotation: 6,
-          duration: 3.6,
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-        });
-
-        gsap.to(".status-strip-track", {
-          xPercent: -50,
-          ease: "none",
-          scrollTrigger: {
-            trigger: document.documentElement,
-            start: "top top",
-            end: "bottom bottom",
-            scrub: 0.4,
-          },
-        });
-      }
-
-      gsap.to(".scroll-progress", {
-        scaleX: 1,
-        ease: "none",
-        scrollTrigger: {
-          trigger: document.documentElement,
-          start: "top top",
-          end: "bottom bottom",
-          scrub: 0.15,
-        },
-      });
-
-      const magneticItems = gsap.utils.toArray<HTMLElement>("[data-magnetic]");
-      const magneticCleanups = magneticItems.map((item) => {
-        const onMove = (event: PointerEvent) => {
-          const bounds = item.getBoundingClientRect();
-          const x = event.clientX - bounds.left - bounds.width / 2;
-          const y = event.clientY - bounds.top - bounds.height / 2;
-          gsap.to(item, {
-            x: x * 0.18,
-            y: y * 0.18,
-            duration: 0.35,
-            ease: "power3.out",
-          });
-        };
-        const onLeave = () =>
-          gsap.to(item, { x: 0, y: 0, duration: 0.7, ease: "elastic.out(1, 0.35)" });
-
-        item.addEventListener("pointermove", onMove);
-        item.addEventListener("pointerleave", onLeave);
-        return () => {
-          item.removeEventListener("pointermove", onMove);
-          item.removeEventListener("pointerleave", onLeave);
-        };
-      });
-
-      return () => magneticCleanups.forEach((cleanup) => cleanup());
-    }, root);
-
-    return () => {
-      context.revert();
-      document.body.classList.remove("is-loading");
-    };
+  useEffect(() => {
+    const tick = () => setTime(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).format(new Date()));
+    tick();
+    const interval = window.setInterval(tick, 1000);
+    return () => window.clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    if (!cursor.current || window.matchMedia("(pointer: coarse)").matches) return;
-    const xTo = gsap.quickTo(cursor.current, "x", {
-      duration: 0.22,
-      ease: "power3",
-    });
-    const yTo = gsap.quickTo(cursor.current, "y", {
-      duration: 0.22,
-      ease: "power3",
-    });
-    const moveCursor = (event: PointerEvent) => {
-      xTo(event.clientX);
-      yTo(event.clientY);
-    };
-    window.addEventListener("pointermove", moveCursor);
-    return () => window.removeEventListener("pointermove", moveCursor);
+    const close = (event: KeyboardEvent) => event.key === "Escape" && setActiveProject(null);
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
   }, []);
 
-  const scramble = (event: ReactPointerEvent<HTMLElement>, key: string) => {
-    const target = event.currentTarget;
-    const original = target.dataset.label ?? target.textContent ?? "";
-    target.dataset.label = original;
-    window.clearInterval(scrambleTimers.current[key]);
-    let iteration = 0;
-
-    scrambleTimers.current[key] = window.setInterval(() => {
-      target.textContent = original
-        .split("")
-        .map((character, index) => {
-          if (character === " " || index < iteration) return original[index];
-          return scrambleCharacters[
-            Math.floor(Math.random() * scrambleCharacters.length)
-          ];
-        })
-        .join("");
-
-      if (iteration >= original.length) {
-        window.clearInterval(scrambleTimers.current[key]);
-        target.textContent = original;
+  useLayoutEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const context = gsap.context(() => {
+      if (reduced) {
+        gsap.set(".site-loader", { display: "none" });
+        gsap.set(".intro-enter, .reveal", { opacity: 1, y: 0 });
+        return;
       }
-      iteration += 0.55;
-    }, 28);
-  };
 
-  const setCursorProjectState = (active: boolean) => {
-    cursor.current?.classList.toggle("is-project", active);
+      document.body.classList.add("is-loading");
+      const counter = { value: 0 };
+      const intro = gsap.timeline({
+        defaults: { ease: "power3.out" },
+        onComplete: () => document.body.classList.remove("is-loading"),
+      });
+      gsap.set(".intro-enter", { opacity: 0, y: 16 });
+      gsap.set(".name-line", { yPercent: 115 });
+      intro
+        .to(counter, {
+          value: 100,
+          duration: 1.15,
+          ease: "power2.inOut",
+          onUpdate: () => {
+            if (loaderCount.current) loaderCount.current.textContent = String(Math.round(counter.value)).padStart(3, "0");
+          },
+        })
+        .to(".loader-track i", { scaleX: 1, duration: 1.15, ease: "power2.inOut" }, 0)
+        .to(".loader-pip", { opacity: 1, stagger: 0.08, duration: 0.15 }, 0.1)
+        .to(".site-loader", { yPercent: -100, duration: 0.72, ease: "power4.inOut" }, ">+.08")
+        .to(".name-line", { yPercent: 0, stagger: 0.07, duration: 0.72 }, "-=.25")
+        .to(".intro-enter", { opacity: 1, y: 0, stagger: 0.07, duration: 0.52 }, "-=.52");
+
+      gsap.utils.toArray<HTMLElement>(".reveal").forEach((element) => {
+        gsap.fromTo(element, { opacity: 0, y: 22 }, {
+          opacity: 1,
+          y: 0,
+          duration: 0.75,
+          ease: "power3.out",
+          scrollTrigger: { trigger: element, start: "top 88%", once: true },
+        });
+      });
+    }, root);
+    return () => context.revert();
+  }, []);
+
+  const copyEmail = async () => {
+    await navigator.clipboard.writeText("khushbrar@gmail.com");
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1800);
   };
 
   return (
-    <main ref={root}>
+    <main className="shell" id="top" ref={root}>
       <div className="site-loader" aria-hidden="true">
-        <div className="loader-top">
-          <span>KHUSHPREET.SYS</span>
-          <span>PORTFOLIO / V2</span>
-        </div>
-        <div className="boot-grid">
-          {Array.from({ length: 48 }).map((_, index) => (
-            <i className="boot-cell" key={index} />
-          ))}
-        </div>
-        <div className="loader-console">
-          <div className="loader-console-head">
-            <span>BOOT SEQUENCE</span>
-            <strong ref={loaderNumber}>000</strong>
-          </div>
-          <div className="loader-progress">
-            <div className="loader-progress-fill" />
-          </div>
-          <div className="loader-console-foot">
-            <span ref={loaderPhase}>WAKING THE INTERFACE</span>
-            <div className="loader-log">
-              <span>UI_OK</span>
-              <span>API_OK</span>
-              <span>DEPLOY_OK</span>
-            </div>
-          </div>
+        <div className="loader-inner">
+          <p><span>KS</span><span ref={loaderCount}>000</span></p>
+          <div className="loader-track"><i /></div>
+          <div className="loader-status"><span className="loader-pip">interface</span><span className="loader-pip">systems</span><span className="loader-pip">cloud</span></div>
         </div>
       </div>
 
-      <div className="scroll-progress" aria-hidden="true" />
-      <div className="project-cursor" ref={cursor} aria-hidden="true">
-        <span>OPEN ↗</span>
-      </div>
-
-      <header className="site-header page-width">
-        <a href="#top" className="brand" data-magnetic>
-          <span>khush.dev</span>
-          <i />
-        </a>
-        <nav aria-label="Primary navigation">
-          <a href="#about">About</a>
-          <a href="#work">Work</a>
-          <a href="#experience">Experience</a>
-        </nav>
-        <div className="header-tools">
-          <span className="available"><i /> Available for good problems</span>
-          <button
-            className="theme-button"
-            type="button"
-            data-magnetic
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-          >
-            {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
-          </button>
+      <section className="intro" aria-labelledby="intro-title">
+        <NamePlate />
+        <div className="intro-grid intro-enter">
+          <div className="intro-copy">
+            <p id="intro-title">Full-stack software engineer.</p>
+            <p>Building AI products at <mark>Zyvka</mark></p>
+            <small>v4.0 / 2026</small>
+          </div>
+          <aside>
+            <nav aria-label="Site">
+              <a href="#about">About</a>
+              <a href="#projects">Projects</a>
+              <a href="#experience">Experience</a>
+            </nav>
+            <p>Punjab, India</p>
+            <time>{time || "--:--:--"} IST</time>
+            <button className="mode-button" type="button" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}>
+              {theme === "light" ? "ink mode" : "paper mode"}
+            </button>
+          </aside>
         </div>
-      </header>
-
-      <section className="hero page-width" id="top">
-        <div className="hero-grid" aria-hidden="true">
-          {Array.from({ length: 12 }).map((_, index) => (
-            <i className="hero-grid-line hero-grid-line-v" key={`v-${index}`} />
-          ))}
-          {Array.from({ length: 9 }).map((_, index) => (
-            <i className="hero-grid-line hero-grid-line-h" key={`h-${index}`} />
-          ))}
-          <div className="hero-orb">
-            <span>KS</span>
-            <i />
-          </div>
-        </div>
-
-        <div className="hero-kicker hero-enter">
-          <span>FULL-STACK SOFTWARE ENGINEER</span>
-          <span>@ ZYVKA HR TECH</span>
-        </div>
-
-        <h1 aria-label="I build software from interface to infrastructure.">
-          <span className="hero-line">
-            <span className="hero-word">I build <em>software</em></span>
-          </span>
-          <span className="hero-line">
-            <span className="hero-word">from interface to</span>
-          </span>
-          <span className="hero-line">
-            <span className="hero-word hero-word-last">infrastructure.<b>✳</b></span>
-          </span>
-        </h1>
-
-        <div className="hero-copy hero-enter">
-          <p>
-            I&apos;m Khushpreet Singh. I build the screen, the API behind it,
-            the workers around it, and the pipeline that ships it.
-          </p>
-          <a href="#work" className="text-link" data-magnetic>
-            See what I&apos;ve shipped <ArrowDown size={16} />
-          </a>
-        </div>
-
-        <div className="hero-status hero-enter">
-          <div className="status-card">
-            <span>BASED IN</span>
-            <strong>Gurugram, IN</strong>
-          </div>
-          <div className="status-card">
-            <span>BUILDING NOW</span>
-            <strong>AI voice systems</strong>
-          </div>
-          <div className="status-card status-card-live">
-            <span>PRODUCTION</span>
-            <strong><i /> All systems operational</strong>
-          </div>
-          <div className="status-card">
-            <span>LOCAL TIME</span>
-            <strong>UTC +05:30</strong>
-          </div>
+        <div className="presence intro-enter">
+          <p><i />Currently: making AI systems survive the real world.</p>
+          <p>Find me on <a href="https://github.com/brarkhushpreet/" target="_blank" rel="noreferrer">GitHub</a>, <button onClick={copyEmail}>email me</button>, or <a href="/Khushpreet_Singh_Resume.pdf" download>download my résumé ↓</a></p>
         </div>
       </section>
 
-      <div className="status-strip" aria-hidden="true">
-        <div className="status-strip-track">
-          {Array.from({ length: 2 }).map((_, group) => (
-            <div className="status-strip-group" key={group}>
-              <span>NEXT.JS</span><i>✳</i>
-              <span>NODE.JS</span><i>✳</i>
-              <span>POSTGRESQL</span><i>✳</i>
-              <span>REDIS / BULLMQ</span><i>✳</i>
-              <span>AWS</span><i>✳</i>
-              <span>REALTIME AI</span><i>✳</i>
-            </div>
-          ))}
+      <section className="about reveal" id="about">
+        <p className="section-label"><span>⌁</span>About</p>
+        <div className="about-copy">
+          <p>I like the whole thing — the interface people touch, the service behind it, and the infrastructure that keeps it alive.</p>
+          <p>My best work sits between product thinking and systems engineering: clear enough for a person, sturdy enough for production.</p>
         </div>
-      </div>
-
-      <section className="intro page-width" id="about">
-        <div className="section-label" data-reveal>
-          <span>01 / HELLO</span>
-          <span className="reveal-line" />
-        </div>
-        <div className="intro-grid">
-          <h2 data-reveal>
-            A software engineer at heart, working across the whole product.
-          </h2>
-          <div className="intro-copy" data-reveal>
-            <p>
-              Some days I&apos;m profiling a React render. Other days I&apos;m
-              tracing a queue worker, shaping an API, wiring a voice agent, or
-              watching a release move through AWS.
-            </p>
-            <p>
-              I like the point where a complex system becomes simple for the
-              person using it — and I&apos;m comfortable owning everything it
-              takes to get there.
-            </p>
-            <div className="intro-links">
-              <a href="mailto:khushbrar@gmail.com">Email me <ArrowUpRight size={14} /></a>
-              <a href="https://github.com/brarkhushpreet/" target="_blank" rel="noreferrer">
-                GitHub <ArrowUpRight size={14} />
-              </a>
-            </div>
-          </div>
-        </div>
-
         <div className="capability-list">
-          {capabilities.map((capability, index) => {
-            const Icon = capability.icon;
-            return (
-              <article className="capability-row" data-reveal key={capability.title}>
-                <span className="capability-index">0{index + 1}</span>
-                <div className="capability-icon"><Icon size={18} /></div>
-                <h3>{capability.title}</h3>
-                <p>{capability.copy}</p>
-                <span className="capability-plus">+</span>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="work page-width" id="work">
-        <div className="section-label" data-reveal>
-          <span>02 / SELECTED WORK</span>
-          <span className="reveal-line" />
-        </div>
-        <div className="work-heading" data-reveal>
-          <h2>A few things I&apos;ve shipped.</h2>
-          <p>Hover a project. The rest know when to get out of the way.</p>
-        </div>
-
-        <div className="project-stack">
-          {projects.map((project) => (
-            <a
-              className="project-row"
-              href={project.link}
-              target="_blank"
-              rel="noreferrer"
-              key={project.title}
-              data-reveal
-              onPointerEnter={() => setCursorProjectState(true)}
-              onPointerLeave={() => setCursorProjectState(false)}
-            >
-              <span className="project-index">{project.index}</span>
-              <div className="project-main">
-                <div className="project-title-row">
-                  <h3>{project.title}</h3>
-                  {project.confidential && <span className="private-tag">PRODUCTION / PRIVATE</span>}
-                </div>
-                <p>{project.description}</p>
-                <div className="project-tags">
-                  {project.stack.map((item) => <span key={item}>{item}</span>)}
-                </div>
-              </div>
-              <div className="project-side">
-                <span>{project.type}</span>
-                <strong>{project.year}</strong>
-              </div>
-              <div className="project-action">
-                <span>{project.linkLabel}</span>
-                <ArrowUpRight size={22} />
-              </div>
-              <div className="project-scan" aria-hidden="true" />
-            </a>
+          {capabilities.map(([number, title, copy]) => (
+            <article key={number}>
+              <span>{number}</span>
+              <strong>{title}</strong>
+              <p>{copy}</p>
+            </article>
           ))}
         </div>
       </section>
 
-      <section className="impact page-width">
-        <div className="section-label" data-reveal>
-          <span>03 / PROOF, NOT VIBES</span>
-          <span className="reveal-line" />
-        </div>
-        <div className="impact-grid">
-          <div className="impact-copy" data-reveal>
-            <h2>Performance is part of the product.</h2>
-            <p>
-              The quiet engineering work matters: smaller bundles, fewer wasted
-              renders, safer deploys, and systems that keep moving under load.
-            </p>
-          </div>
-          <div className="metric-board" data-reveal>
-            <div><strong>73%</strong><span>smaller initial bundle</span></div>
-            <div><strong>30%</strong><span>faster interactions</span></div>
-            <div><strong>40%</strong><span>less technical debt</span></div>
-            <div><strong>16</strong><span>voice workers across 4 runtimes</span></div>
-          </div>
+      <section className="projects reveal" id="projects" aria-label="Projects">
+        <header className="section-head"><p><span aria-hidden="true">📁</span>Selected projects</p><small>click to open · esc to close</small></header>
+        <div className="project-list">
+          {projects.map((project, index) => (
+            <ProjectEntry
+              key={project.id}
+              project={project}
+              open={activeProject === index}
+              onToggle={() => setActiveProject(activeProject === index ? null : index)}
+            />
+          ))}
         </div>
       </section>
 
-      <section className="experience page-width" id="experience">
-        <div className="section-label" data-reveal>
-          <span>04 / EXPERIENCE</span>
-          <span className="reveal-line" />
-        </div>
-        <div className="experience-layout">
-          <div className="experience-heading" data-reveal>
-            <h2>Work so far.</h2>
-            <p>
-              From learning the stack to owning production systems end to end.
-            </p>
-          </div>
-          <div className="experience-list">
-            {experience.map((item, index) => (
-              <article className="experience-item" data-reveal key={item.date}>
-                <span>0{index + 1}</span>
-                <div>
-                  <time>{item.date}</time>
-                  <h3>{item.role}</h3>
-                  <strong>{item.company}</strong>
-                  <p>{item.description}</p>
-                </div>
-              </article>
-            ))}
-          </div>
+      <section className="experience reveal" id="experience">
+        <header className="section-head"><p><span aria-hidden="true">🗂️</span>Experience</p><small>the path so far</small></header>
+        <div className="experience-list">
+          {experience.map((item) => (
+            <article key={item.date}>
+              <time>{item.date}</time>
+              <div><h3>{item.role}</h3><p>{item.company}</p><span>{item.copy}</span></div>
+            </article>
+          ))}
         </div>
       </section>
 
-      <section className="stack page-width">
-        <div className="section-label" data-reveal>
-          <span>05 / CURRENT STACK</span>
-          <span className="reveal-line" />
-        </div>
-        <div className="stack-console" data-reveal>
-          <div className="console-top">
-            <div><i /><i /><i /></div>
-            <span>khushpreet@portfolio: ~/stack</span>
-            <span>LIVE</span>
-          </div>
-          <div className="console-body">
-            <p><span>01</span><strong>interface</strong><em>React · Next.js · TypeScript · Tailwind · Shadcn</em></p>
-            <p><span>02</span><strong>server</strong><em>Node.js · Express · REST · WebSockets · Auth</em></p>
-            <p><span>03</span><strong>data</strong><em>PostgreSQL · MongoDB · Prisma · Redis · BullMQ</em></p>
-            <p><span>04</span><strong>ai / realtime</strong><em>OpenAI · LiveKit · Sarvam · Voice · Audio</em></p>
-            <p><span>05</span><strong>ship</strong><em>AWS EC2 · RDS · S3 · PM2 · GitHub Actions</em></p>
-          </div>
-          <div className="console-command">
-            <span>→</span>
-            <strong>ready_to_build_something_good</strong>
-            <i />
-          </div>
+      <section className="toolbox reveal">
+        <header className="section-head"><p><span aria-hidden="true">🧰</span>Working set</p><small>tools change, principles don’t</small></header>
+        <div className="tool-lines">
+          <p><span>interface</span>Next.js · React · TypeScript · CSS · GSAP</p>
+          <p><span>server</span>Node.js · Express · Python · WebSockets</p>
+          <p><span>data</span>PostgreSQL · Prisma · Redis · BullMQ</p>
+          <p><span>delivery</span>AWS · EC2 · RDS · S3 · PM2 · GitHub Actions</p>
         </div>
       </section>
 
-      <section className="contact page-width">
-        <div className="contact-star" aria-hidden="true"><Sparkles size={40} /></div>
-        <div className="contact-copy" data-reveal>
-          <span>06 / CONTACT</span>
-          <h2>Have a hard problem?</h2>
-          <p>Good. Those are usually the interesting ones.</p>
-        </div>
-        <a className="contact-button" href="mailto:khushbrar@gmail.com" data-magnetic>
-          <Mail size={20} />
-          <span
-            onPointerEnter={(event) => scramble(event, "contact")}
-            data-label="START A CONVERSATION"
-          >
-            START A CONVERSATION
-          </span>
-          <ArrowUpRight size={20} />
-        </a>
-      </section>
-
-      <footer className="site-footer page-width">
+      <section className="contact reveal" id="contact">
         <div>
-          <span>© 2026 KHUSHPREET SINGH</span>
-          <span>GURUGRAM / INDIA</span>
+          <i />
+          <p>Available for thoughtful engineering work.</p>
         </div>
-        <div className="footer-links">
-          <a href="https://github.com/brarkhushpreet/" target="_blank" rel="noreferrer">
-            <GitBranch size={14} /> GitHub
-          </a>
-          <a href="/Khushpreet_Singh_Resume.pdf" download>
-            <Download size={14} /> Résumé
-          </a>
-          <a href="#top">Top ↑</a>
+        <h2>Have a useful problem<br />worth solving?</h2>
+        <div className="contact-links">
+          <a href="mailto:khushbrar@gmail.com">Let’s talk <ArrowUpRight size={17} /></a>
+          <button onClick={copyEmail}>{copied ? <Check size={14} /> : <Copy size={14} />}{copied ? "copied" : "copy email"}</button>
         </div>
+      </section>
+
+      <footer>
+        <span>made by hand in Punjab · © {new Date().getFullYear()}</span>
+        <div><a href="https://github.com/brarkhushpreet/" target="_blank" rel="noreferrer">GitHub</a><a href="#top">back to top ↑</a></div>
       </footer>
+
+      <div className={`copy-toast ${copied ? "show" : ""}`} role="status">email copied to clipboard</div>
     </main>
   );
 }

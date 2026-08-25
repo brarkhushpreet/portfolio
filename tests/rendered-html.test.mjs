@@ -33,7 +33,8 @@ test("server-renders Khushpreet's portfolio", async () => {
     html,
     /<title>Khushpreet Singh — Full-Stack Software Engineer<\/title>/i,
   );
-  assert.match(html, /interface to infrastructure/i);
+  assert.match(html, /Full-stack software engineer/i);
+  assert.match(html, /making AI systems survive the real world/i);
   assert.match(html, /Zyastra Agent Platform/);
   assert.match(html, /AstraSAR Voice Runtime/);
   assert.match(html, /EchoPass/);
@@ -55,6 +56,8 @@ test("ships the portfolio assets and animation system", async () => {
   assert.match(page, /ScrollTrigger/);
   assert.match(page, /prefers-reduced-motion/);
   assert.match(page, /portfolio-theme/);
+  assert.match(page, /ProjectEntry/);
+  assert.match(page, /NamePlate/);
   assert.match(layout, /og\.png/);
   assert.match(packageJson, /"gsap"/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
