@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import { ArrowUpRight, Check, Copy } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -8,6 +10,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent,
 } from "react";
 
@@ -25,120 +28,101 @@ type Project = {
   stack: string[];
   link: string;
   linkLabel: string;
-  private?: boolean;
-  visual: "agent" | "voice" | "sonar" | "chat" | "movie" | "blog";
+  screenshots: { src: string; alt: string; label: string }[];
 };
 
 const projects: Project[] = [
   {
-    id: "zyastra",
-    title: "Zyastra Agent Platform",
-    shortTitle: "Zyastra",
-    subtitle: "AI agents, from dashboard to deployment",
-    year: "2025—Now",
-    status: "In production",
-    discipline: "Full-stack · AI · Cloud",
-    description:
-      "A production AI-agent platform spanning a Next.js product surface, Express APIs, PostgreSQL, background workers, secure embeds, and AWS releases.",
-    story:
-      "I work across the whole system: shaping complex operator interfaces, designing APIs and data flows, orchestrating long-running jobs, and making releases repeatable. The result is software that feels considered on screen and remains dependable after it leaves the browser.",
-    highlights: ["73% faster key workflows", "30% lower API latency", "40% fewer release issues"],
-    stack: ["Next.js", "Express", "Prisma", "PostgreSQL", "BullMQ", "Redis", "AWS"],
-    link: "https://zyvka.com/Zy-VMS",
-    linkLabel: "View product ecosystem",
-    private: true,
-    visual: "agent",
-  },
-  {
-    id: "astrasar",
-    title: "AstraSAR Voice Runtime",
-    shortTitle: "AstraSAR",
-    subtitle: "Realtime voice infrastructure at production scale",
-    year: "2025—Now",
-    status: "In production",
-    discipline: "Realtime AI · Backend",
-    description:
-      "A voice-agent runtime joining telephony, LiveKit, Sarvam, Node.js, and Python across multiple production servers.",
-    story:
-      "The runtime coordinates calls, streaming audio, AI responses, and worker lifecycles without losing the conversational beat. I built deployment automation and PM2 process topology across four runtimes, giving the team sixteen concurrent voice workers with a predictable release path.",
-    highlights: ["16 concurrent workers", "4 isolated runtimes", "Automated multi-server delivery"],
-    stack: ["Node.js", "Python", "LiveKit", "WebSockets", "PM2", "GitHub Actions"],
-    link: "https://zyvka.com/Zy-VMS",
-    linkLabel: "View product ecosystem",
-    private: true,
-    visual: "voice",
-  },
-  {
     id: "echopass",
-    title: "EchoPass / AMS",
+    title: "EchoPass / ClassPulse",
     shortTitle: "EchoPass",
-    subtitle: "Attendance verified through ultrasonic presence",
-    year: "2025",
+    subtitle: "Verifiable classroom presence, without roll-call friction",
+    year: "2025—26",
     status: "Capstone",
-    discipline: "Product · Audio systems",
+    discipline: "Full-stack · Audio systems",
     description:
-      "A proof-of-presence attendance system that generates randomized ultrasonic tokens and verifies them through realtime browser audio analysis.",
+      "A teacher-owned attendance platform that verifies the room through rotating ultrasound or fresh geolocation evidence.",
     story:
-      "EchoPass turns the room itself into a temporary credential. A teacher broadcasts a short-lived inaudible signature, student devices analyse the signal locally, and the platform validates time, session, and identity before recording attendance.",
-    highlights: ["Short-lived audio tokens", "Browser-side signal analysis", "Role-based session control"],
-    stack: ["Next.js", "Web Audio", "PostgreSQL", "NextAuth"],
+      "EchoPass turns the room into a temporary credential. Teachers open a short check-in window, students prove presence through a live signal, and the product turns every session into useful classroom and student-level analytics.",
+    highlights: ["Rotating acoustic challenges", "Live classroom analytics", "Signed attendance evidence"],
+    stack: ["Next.js", "Web Audio", "PostgreSQL", "Prisma", "Redis", "WebSockets"],
     link: "https://github.com/brarkhushpreet/AMS",
     linkLabel: "View repository",
-    visual: "sonar",
+    screenshots: [
+      { src: "/projects/echopass-product.png", alt: "EchoPass product capabilities overview", label: "Product overview" },
+      { src: "/projects/echopass-dashboard.png", alt: "EchoPass teacher analytics dashboard", label: "Teacher dashboard" },
+      { src: "/projects/echopass-classroom.png", alt: "EchoPass classroom session controls", label: "Classroom controls" },
+      { src: "/projects/echopass-attendance.png", alt: "EchoPass attendance analytics screen", label: "Attendance analytics" },
+    ],
   },
   {
     id: "chat",
-    title: "Realtime Chat",
-    shortTitle: "Realtime Chat",
-    subtitle: "Fast conversations with persistent context",
-    year: "2024",
-    status: "Shipped",
-    discipline: "Realtime product",
+    title: "Nexus Realtime Chat",
+    shortTitle: "Nexus Chat",
+    subtitle: "Persistent conversations and lightweight team huddles",
+    year: "2024—26",
+    status: "Built",
+    discipline: "Realtime · Collaboration",
     description:
-      "A high-concurrency messaging application with bidirectional events, secure sessions, persistent conversations, and optimized database access.",
+      "A realtime collaboration workspace with authenticated rooms, persistent messages, presence, and browser-native huddles.",
     story:
-      "Designed as a full product rather than a Socket.IO demo: authenticated rooms, resilient message history, responsive layouts, presence state, and a backend data model built for fast conversation retrieval.",
-    highlights: ["Bidirectional events", "Persistent history", "Secure authenticated rooms"],
-    stack: ["Next.js", "Socket.IO", "PostgreSQL", "Prisma"],
+      "Nexus grew from a messaging experiment into a complete product surface: spaces, conversations, secure membership, resilient history, realtime state, and native WebRTC calls backed by a persistent Node server.",
+    highlights: ["Authenticated Socket.IO rooms", "Persistent message history", "Native WebRTC huddles"],
+    stack: ["Next.js", "Socket.IO", "WebRTC", "PostgreSQL", "Prisma", "Auth.js"],
     link: "https://github.com/brarkhushpreet/Chat-Application-nextjs",
     linkLabel: "View repository",
-    visual: "chat",
+    screenshots: [
+      { src: "/projects/chat-workspace.png", alt: "Nexus realtime chat workspace in dark mode", label: "Realtime workspace" },
+      { src: "/projects/chat-workspace-light.png", alt: "Nexus realtime chat workspace in light mode", label: "Light interface" },
+      { src: "/projects/chat-space-menu.png", alt: "Nexus space management menu", label: "Space controls" },
+      { src: "/projects/chat-signin.png", alt: "Nexus secure sign-in screen", label: "Authentication" },
+    ],
   },
   {
     id: "movies",
-    title: "Movie Explorer",
+    title: "Vanta Movie Explorer",
     shortTitle: "Movie Explorer",
-    subtitle: "Discovery shaped by data and AI",
-    year: "2024",
+    subtitle: "A cinematic, profile-aware streaming discovery experience",
+    year: "2024—26",
     status: "Live",
-    discipline: "Discovery · AI",
+    discipline: "Product · Discovery",
     description:
-      "A responsive movie-discovery product combining TMDB data with Gemini-powered recommendations and a fast browsing experience.",
+      "A polished streaming-discovery product with member accounts, profiles, search, watchlists, title details, and trailer flows.",
     story:
-      "The interface makes a large catalogue feel calm: visual browsing, useful details, quick search, and AI-assisted suggestions that help people move from an idea to something worth watching.",
-    highlights: ["Live TMDB catalogue", "AI recommendations", "Responsive discovery flows"],
-    stack: ["Next.js", "TMDB", "Gemini AI", "Tailwind CSS"],
+      "The experience makes a large catalogue feel immediate through confident visual hierarchy, responsive content rails, useful title context, and profile-aware personalization. TMDB powers live metadata with a curated fallback for dependable demos.",
+    highlights: ["Profile-aware discovery", "Live TMDB metadata", "Persistent My List"],
+    stack: ["Next.js", "React", "TMDB", "PostgreSQL", "Tailwind CSS"],
     link: "https://movie-website-gules.vercel.app",
     linkLabel: "Visit live site",
-    visual: "movie",
+    screenshots: [
+      { src: "/projects/movie-browse.png", alt: "Vanta movie discovery home screen", label: "Discovery home" },
+      { src: "/projects/movie-details.png", alt: "Vanta Inception title details screen", label: "Title details" },
+      { src: "/projects/movie-catalog.png", alt: "Vanta movie catalog screen", label: "Movie catalog" },
+      { src: "/projects/movie-profiles.png", alt: "Vanta profile selection screen", label: "Profile selection" },
+    ],
   },
   {
     id: "blog",
     title: "Developer Blog",
     shortTitle: "Developer Blog",
-    subtitle: "A focused place for technical notes",
-    year: "2024",
-    status: "Archive",
-    discipline: "Publishing",
+    subtitle: "First-principles notes on software systems",
+    year: "2024—26",
+    status: "Published",
+    discipline: "Publishing · Full-stack",
     description:
-      "A minimal publishing experience for technical notes, experiments, and lessons gathered while building real products.",
+      "A focused technical publication covering JavaScript, React, Node.js, realtime systems, Docker, AWS, and architecture.",
     story:
-      "Built to keep the reading experience ahead of the interface. The content system, responsive rhythm, and small details make it easy to publish and comfortable to spend time with.",
-    highlights: ["Content-first layout", "Responsive typography", "Simple publishing workflow"],
-    stack: ["JavaScript", "Content", "Responsive UI"],
+      "The product keeps reading ahead of interface chrome. A separate Express API serves structured Markdown articles, while the Next.js frontend handles search, topic filters, responsive typography, dark mode, and article-level metadata.",
+    highlights: ["Ten technical deep dives", "Search and topic filters", "Independent content API"],
+    stack: ["Next.js", "Express", "MongoDB", "Markdown", "Cloudflare"],
     link: "https://github.com/brarkhushpreet/blog",
     linkLabel: "View repository",
-    visual: "blog",
+    screenshots: [
+      { src: "/projects/blog-home.png", alt: "Developer blog home page", label: "Publication home" },
+      { src: "/projects/blog-articles.png", alt: "Developer blog article archive", label: "Article archive" },
+      { src: "/projects/blog-article.png", alt: "Developer blog article reading view", label: "Reading experience" },
+      { src: "/projects/blog-about.png", alt: "Developer blog about page", label: "About the publication" },
+    ],
   },
 ];
 
@@ -154,13 +138,13 @@ const experience = [
     date: "May 2025 — Present",
     role: "Software Development Engineer I",
     company: "Zyvka HR Tech",
-    copy: "Building and operating AI products across frontend, backend, realtime workers, databases, and AWS infrastructure.",
+    copy: "Building and operating company AI products across product interfaces, backend services, realtime workers, data, and AWS. Details stay intentionally high-level because the work is production-specific.",
   },
   {
     date: "Jul 2024 — Apr 2025",
     role: "Software Development Engineer Intern",
     company: "Zyvka HR Tech",
-    copy: "Migrated a legacy product to React 19, shipped realtime chat, and automated production deployment workflows.",
+    copy: "Worked across a production platform migration, realtime product features, and repeatable delivery workflows while keeping company implementation details private.",
   },
   {
     date: "Jun 2023 — Jul 2023",
@@ -170,130 +154,148 @@ const experience = [
   },
 ];
 
-function NamePlate() {
-  const plate = useRef<HTMLDivElement>(null);
-  const dragStart = useRef({ x: 0, y: 0, px: 0, py: 0 });
-  const [dragging, setDragging] = useState(false);
-  const [measure, setMeasure] = useState("534 × 96");
+function SignalName() {
+  const field = useRef<HTMLDivElement>(null);
+  const rail = useRef<HTMLSpanElement>(null);
+  const thumb = useRef<HTMLButtonElement>(null);
+  const readout = useRef<HTMLElement>(null);
+  const dragging = useRef(false);
+  const value = useRef(50);
+  const verticalValue = useRef(50);
+  const animationFrame = useRef<number | null>(null);
 
-  const move = (event: PointerEvent<HTMLButtonElement>) => {
-    if (!dragging || !plate.current) return;
-    const dx = event.clientX - dragStart.current.px;
-    const dy = event.clientY - dragStart.current.py;
-    const x = Math.max(-14, Math.min(14, dragStart.current.x + dx * 0.085));
-    const y = Math.max(-10, Math.min(10, dragStart.current.y + dy * 0.07));
-    const stretch = Math.max(0.92, Math.min(1.08, 1 + dx * 0.0008));
-    plate.current.style.setProperty("--warp-x", `${x}deg`);
-    plate.current.style.setProperty("--warp-y", `${y}px`);
-    plate.current.style.setProperty("--stretch", String(stretch));
-    plate.current.dataset.x = String(x);
-    plate.current.dataset.y = String(y);
-    plate.current.dataset.stretch = String(stretch);
-    setMeasure(`${Math.round(534 * stretch)} × ${Math.round(96 + Math.abs(y))}`);
+  const applyValue = (nextValue: number, nextVertical = verticalValue.current) => {
+    const next = Math.max(0, Math.min(100, nextValue));
+    const vertical = Math.max(0, Math.min(100, nextVertical));
+    value.current = next;
+    verticalValue.current = vertical;
+    if (animationFrame.current !== null) window.cancelAnimationFrame(animationFrame.current);
+    animationFrame.current = window.requestAnimationFrame(() => {
+      const horizontalOffset = next - 50;
+      const rotationProgress = horizontalOffset / 50;
+      field.current?.querySelectorAll<HTMLElement>(".signal-char").forEach((character, index) => {
+        const direction = index % 2 === 0 ? 1 : -1;
+        const rotation = rotationProgress * direction * (2.4 + (index % 3) * 0.36);
+        character.style.setProperty("--char-rotation", `${rotation}deg`);
+      });
+      field.current?.style.setProperty("--signal-pos", `${next}%`);
+      thumb.current?.setAttribute("aria-valuenow", String(Math.round(next)));
+      if (readout.current) readout.current.textContent = `X ${String(Math.round(next)).padStart(3, "0")} · Y ${String(Math.round(vertical)).padStart(3, "0")}`;
+      animationFrame.current = null;
+    });
   };
 
-  const start = (event: PointerEvent<HTMLButtonElement>) => {
+  const updateFromPointer = (clientX: number, clientY: number) => {
+    if (!rail.current) return;
+    const bounds = rail.current.getBoundingClientRect();
+    applyValue(
+      ((clientX - bounds.left) / bounds.width) * 100,
+      (clientY / window.innerHeight) * 100,
+    );
+  };
+
+  const start = (event: PointerEvent<HTMLDivElement>) => {
+    dragging.current = true;
     event.currentTarget.setPointerCapture(event.pointerId);
-    setDragging(true);
-    dragStart.current = {
-      x: Number(plate.current?.dataset.x ?? 0),
-      y: Number(plate.current?.dataset.y ?? 0),
-      px: event.clientX,
-      py: event.clientY,
+    field.current?.classList.add("is-dragging");
+    updateFromPointer(event.clientX, event.clientY);
+  };
+
+  const move = (event: PointerEvent<HTMLDivElement>) => {
+    if (dragging.current) updateFromPointer(event.clientX, event.clientY);
+  };
+
+  const end = (event: PointerEvent<HTMLDivElement>) => {
+    if (!dragging.current) return;
+    updateFromPointer(event.clientX, event.clientY);
+    dragging.current = false;
+    field.current?.classList.remove("is-dragging");
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+  };
+
+  const keyboardMove = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+    const step = event.shiftKey ? 10 : 4;
+    if (event.key === "ArrowLeft" || event.key === "ArrowDown") applyValue(value.current - step);
+    else if (event.key === "ArrowRight" || event.key === "ArrowUp") applyValue(value.current + step);
+    else if (event.key === "Home") applyValue(0);
+    else if (event.key === "End") applyValue(100);
+    else return;
+    event.preventDefault();
+  };
+
+  const moveSpotlight = (event: PointerEvent<HTMLDivElement>) => {
+    if ((event.target as HTMLElement).closest(".signal-field")) return;
+    field.current?.querySelectorAll<HTMLElement>(".signal-char").forEach((character) => {
+      const bounds = character.getBoundingClientRect();
+      character.style.setProperty("--char-spot-x", `${event.clientX - bounds.left}px`);
+      character.style.setProperty("--char-spot-y", `${event.clientY - bounds.top}px`);
+    });
+  };
+
+  const clearSpotlight = () => {
+    field.current?.querySelectorAll<HTMLElement>(".signal-char").forEach((character) => {
+      character.style.setProperty("--char-spot-x", "-999px");
+      character.style.setProperty("--char-spot-y", "-999px");
+    });
+  };
+
+  useLayoutEffect(() => {
+    applyValue(50, 50);
+    return () => {
+      if (animationFrame.current !== null) window.cancelAnimationFrame(animationFrame.current);
     };
-  };
-
-  const end = () => setDragging(false);
-
-  const reset = () => {
-    if (!plate.current) return;
-    plate.current.style.setProperty("--warp-x", "0deg");
-    plate.current.style.setProperty("--warp-y", "0px");
-    plate.current.style.setProperty("--stretch", "1");
-    plate.current.dataset.x = "0";
-    plate.current.dataset.y = "0";
-    plate.current.dataset.stretch = "1";
-    setMeasure("534 × 96");
-  };
+  }, []);
 
   return (
-    <div className="name-plate" ref={plate} onDoubleClick={reset}>
-      <h1 aria-label="Khushpreet Singh">
-        <span className="name-line">khushpreet</span>
-        <span className="name-line">singh</span>
-      </h1>
-      <span className="plate-hint">drag the points · double-click to reset</span>
-      <span className="plate-measure">{measure}</span>
-      {["a", "b", "c", "d"].map((handle) => (
-        <button
-          key={handle}
-          className={`plate-handle handle-${handle}`}
-          onPointerDown={start}
-          onPointerMove={move}
-          onPointerUp={end}
-          onPointerCancel={end}
-          aria-label="Drag to reshape the name"
-        />
+    <div className="signal-name" ref={field} onPointerMove={moveSpotlight} onPointerLeave={clearSpotlight}>
+      <span className="signal-kicker">KS / BUILD 04 · DRAG + RELEASE</span>
+      <div className="signal-title-wrap">
+        <h1 className="signal-title-base" aria-label="Khushpreet Singh">
+          <span className="signal-word signal-word-primary">
+            {Array.from("khushpreet").map((character, index) => <span className="signal-char" key={`${character}-${index}`}>{character}</span>)}
+          </span>
+          <span className="signal-word signal-word-secondary">
+            {Array.from("singh").map((character, index) => <span className="signal-char" key={`${character}-${index}`}>{character}</span>)}
+          </span>
+        </h1>
+      </div>
+      <div className="signal-field" onPointerDown={start} onPointerMove={move} onPointerUp={end} onPointerCancel={end}>
+        <span className="signal-axis" ref={rail}>
+          {Array.from({ length: 21 }).map((_, index) => <i key={index} />)}
+          <button ref={thumb} className="signal-thumb" type="button" role="slider" aria-label="Adjust name signal" aria-valuemin={0} aria-valuemax={100} aria-valuenow={50} onKeyDown={keyboardMove} />
+        </span>
+        <small ref={readout}>X 050 · Y 050</small>
+      </div>
+    </div>
+  );
+}
+
+function ProjectGallery({ project }: { project: Project }) {
+  return (
+    <div className="case-gallery" aria-label={`${project.shortTitle} screenshots`}>
+      {project.screenshots.map((screenshot, index) => (
+        <figure key={screenshot.src}>
+          <div className="case-shot">
+            <img
+              src={screenshot.src}
+              alt={screenshot.alt}
+              width={1264}
+              height={720}
+              loading={index === 0 ? "eager" : "lazy"}
+            />
+          </div>
+          <figcaption><span>{String(index + 1).padStart(2, "0")}</span>{screenshot.label}</figcaption>
+        </figure>
       ))}
     </div>
   );
 }
 
-function ProjectVisual({ variant, title }: { variant: Project["visual"]; title: string }) {
-  return (
-    <div className={`project-visual visual-${variant}`} aria-label={`${title} system illustration`} role="img">
-      <div className="visual-chrome"><span /><span>{title}</span><span>live</span></div>
-      {variant === "agent" && (
-        <div className="agent-board">
-          <div className="agent-main"><span>agent / outbound-04</span><strong>Planning the next best action</strong><i /></div>
-          <div className="agent-rail">
-            {[["calls", "148"], ["queue", "06"], ["success", "92%"]].map(([label, value]) => <p key={label}><span>{label}</span><strong>{value}</strong></p>)}
-          </div>
-          <div className="agent-flow"><i /><i /><i /><i /><i /></div>
-        </div>
-      )}
-      {variant === "voice" && (
-        <div className="voice-board">
-          <div className="waveform">{Array.from({ length: 34 }).map((_, index) => <i key={index} style={{ "--bar": `${22 + ((index * 37) % 70)}%` } as React.CSSProperties} />)}</div>
-          <div className="voice-meta"><span>caller connected</span><strong>00:02:18</strong><span>latency 184ms</span></div>
-          <div className="worker-grid">{Array.from({ length: 16 }).map((_, index) => <i key={index} className={index < 11 ? "busy" : ""}>{String(index + 1).padStart(2, "0")}</i>)}</div>
-        </div>
-      )}
-      {variant === "sonar" && (
-        <div className="sonar-board">
-          <div className="sonar-ring"><i /><i /><i /><i /></div>
-          <div className="sonar-readout"><span>19.2 kHz</span><strong>PRESENCE VERIFIED</strong><span>token expires / 00:08</span></div>
-        </div>
-      )}
-      {variant === "chat" && (
-        <div className="chat-board">
-          <div className="contact-list">{["KS", "AR", "DS", "MK"].map((name, index) => <p key={name} className={index === 0 ? "selected" : ""}><i>{name}</i><span>conversation {index + 1}</span></p>)}</div>
-          <div className="conversation"><span>Shipped the new worker flow.</span><span>Nice — checking the deployment now.</span><span>Production is healthy ✓</span></div>
-        </div>
-      )}
-      {variant === "movie" && (
-        <div className="movie-board">
-          <p><small>Recommended tonight</small><strong>Find something<br />worth watching.</strong></p>
-          <div className="poster-stack"><i>01</i><i>02</i><i>03</i></div>
-          <span className="movie-score">AI MATCH · 94%</span>
-        </div>
-      )}
-      {variant === "blog" && (
-        <div className="blog-board">
-          <small>FIELD NOTES / 04</small>
-          <h4>Building systems<br />that keep their promises.</h4>
-          <div>{Array.from({ length: 7 }).map((_, index) => <i key={index} />)}</div>
-          <span>8 MIN READ →</span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ProjectEntry({ project, open, onToggle }: { project: Project; open: boolean; onToggle: () => void }) {
+function ProjectEntry({ project, index, open, onToggle }: { project: Project; index: number; open: boolean; onToggle: () => void }) {
   return (
     <article className={`project-item ${open ? "is-open" : ""}`}>
       <button className="project-trigger" onClick={onToggle} aria-expanded={open} aria-controls={`${project.id}-detail`}>
+        <span className="project-index">{String(index + 1).padStart(2, "0")}</span>
         <span className="project-title">{project.shortTitle}</span>
         <span className="project-subtitle">{project.subtitle}</span>
         <span className="project-arrow" aria-hidden="true">↗</span>
@@ -306,7 +308,7 @@ function ProjectEntry({ project, open, onToggle }: { project: Project; open: boo
             <button onClick={onToggle} type="button">close <span>×</span></button>
           </div>
           <div className="case-meta"><span>{project.discipline}</span><span>{project.year}</span><span>{project.status}</span></div>
-          <ProjectVisual variant={project.visual} title={project.shortTitle} />
+          <ProjectGallery project={project} />
           <div className="case-copy">
             <h4>{project.description}</h4>
             <p>{project.story}</p>
@@ -318,7 +320,6 @@ function ProjectEntry({ project, open, onToggle }: { project: Project; open: boo
             <div className="case-stack">{project.stack.map((item) => <span key={item}>{item}</span>)}</div>
             <a href={project.link} target="_blank" rel="noreferrer">{project.linkLabel} <ArrowUpRight size={14} /></a>
           </div>
-          {project.private && <p className="private-note">Selected details only — production company work.</p>}
         </div>
       </div>
     </article>
@@ -335,7 +336,9 @@ export default function Home() {
 
   useEffect(() => {
     const stored = window.localStorage.getItem("portfolio-theme");
-    const next = stored === "dark" ? "dark" : "light";
+    const next = stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+    // Theme preferences are browser-only and must be synchronized after hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(next);
     document.documentElement.dataset.theme = next;
   }, []);
@@ -375,7 +378,7 @@ export default function Home() {
         onComplete: () => document.body.classList.remove("is-loading"),
       });
       gsap.set(".intro-enter", { opacity: 0, y: 16 });
-      gsap.set(".name-line", { yPercent: 115 });
+      gsap.set(".signal-title-base", { opacity: 0, y: 24 });
       intro
         .to(counter, {
           value: 100,
@@ -388,7 +391,7 @@ export default function Home() {
         .to(".loader-track i", { scaleX: 1, duration: 1.15, ease: "power2.inOut" }, 0)
         .to(".loader-pip", { opacity: 1, stagger: 0.08, duration: 0.15 }, 0.1)
         .to(".site-loader", { yPercent: -100, duration: 0.72, ease: "power4.inOut" }, ">+.08")
-        .to(".name-line", { yPercent: 0, stagger: 0.07, duration: 0.72 }, "-=.25")
+        .to(".signal-title-base", { opacity: 1, y: 0, duration: 0.72, clearProps: "transform,opacity" }, "-=.25")
         .to(".intro-enter", { opacity: 1, y: 0, stagger: 0.07, duration: 0.52 }, "-=.52");
 
       gsap.utils.toArray<HTMLElement>(".reveal").forEach((element) => {
@@ -420,8 +423,17 @@ export default function Home() {
         </div>
       </div>
 
+      <header className="utility-bar intro-enter">
+        <a href="#top" aria-label="Back to top"><strong>KS</strong><span>portfolio / 2026</span></a>
+        <button className="theme-switch" type="button" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}>
+          <span className={theme === "light" ? "active" : ""}>Light</span>
+          <i aria-hidden="true"><b /></i>
+          <span className={theme === "dark" ? "active" : ""}>Dark</span>
+        </button>
+      </header>
+
       <section className="intro" aria-labelledby="intro-title">
-        <NamePlate />
+        <SignalName />
         <div className="intro-grid intro-enter">
           <div className="intro-copy">
             <p id="intro-title">Full-stack software engineer.</p>
@@ -434,21 +446,19 @@ export default function Home() {
               <a href="#projects">Projects</a>
               <a href="#experience">Experience</a>
             </nav>
-            <p>Punjab, India</p>
+            <p>Sirsa, Haryana</p>
             <time>{time || "--:--:--"} IST</time>
-            <button className="mode-button" type="button" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}>
-              {theme === "light" ? "ink mode" : "paper mode"}
-            </button>
+            <span className="system-health"><i />systems nominal</span>
           </aside>
         </div>
-        <div className="presence intro-enter">
-          <p><i />Currently: making AI systems survive the real world.</p>
-          <p>Find me on <a href="https://github.com/brarkhushpreet/" target="_blank" rel="noreferrer">GitHub</a>, <button onClick={copyEmail}>email me</button>, or <a href="/Khushpreet_Singh_Resume.pdf" download>download my résumé ↓</a></p>
+        <div className="now-panel intro-enter">
+          <div className="now-entry"><span>NOW / 01</span><p>Making AI systems survive the real world.</p><em><i />open to useful problems</em></div>
+          <p className="find-line">Elsewhere: <a href="https://github.com/brarkhushpreet/" target="_blank" rel="noreferrer">GitHub</a> · <button onClick={copyEmail}>email</button> · <a href="/Khushpreet_Singh_Resume.pdf" download>résumé ↓</a></p>
         </div>
       </section>
 
       <section className="about reveal" id="about">
-        <p className="section-label"><span>⌁</span>About</p>
+        <header className="section-head"><p><span>PROFILE / 01</span>About the work</p><small>built end to end</small></header>
         <div className="about-copy">
           <p>I like the whole thing — the interface people touch, the service behind it, and the infrastructure that keeps it alive.</p>
           <p>My best work sits between product thinking and systems engineering: clear enough for a person, sturdy enough for production.</p>
@@ -465,12 +475,13 @@ export default function Home() {
       </section>
 
       <section className="projects reveal" id="projects" aria-label="Projects">
-        <header className="section-head"><p><span aria-hidden="true">📁</span>Selected projects</p><small>click to open · esc to close</small></header>
+        <header className="section-head"><p><span>INDEX / 04</span>Selected systems</p><small>open a project ↓</small></header>
         <div className="project-list">
           {projects.map((project, index) => (
             <ProjectEntry
               key={project.id}
               project={project}
+              index={index}
               open={activeProject === index}
               onToggle={() => setActiveProject(activeProject === index ? null : index)}
             />
@@ -479,7 +490,7 @@ export default function Home() {
       </section>
 
       <section className="experience reveal" id="experience">
-        <header className="section-head"><p><span aria-hidden="true">🗂️</span>Experience</p><small>the path so far</small></header>
+        <header className="section-head"><p><span>PATH / 03</span>Experience</p><small>work in motion</small></header>
         <div className="experience-list">
           {experience.map((item) => (
             <article key={item.date}>
@@ -491,7 +502,7 @@ export default function Home() {
       </section>
 
       <section className="toolbox reveal">
-        <header className="section-head"><p><span aria-hidden="true">🧰</span>Working set</p><small>tools change, principles don’t</small></header>
+        <header className="section-head"><p><span>STACK / 04</span>Working set</p><small>tools change, principles don’t</small></header>
         <div className="tool-lines">
           <p><span>interface</span>Next.js · React · TypeScript · CSS · GSAP</p>
           <p><span>server</span>Node.js · Express · Python · WebSockets</p>

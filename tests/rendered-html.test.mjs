@@ -35,9 +35,11 @@ test("server-renders Khushpreet's portfolio", async () => {
   );
   assert.match(html, /Full-stack software engineer/i);
   assert.match(html, /making AI systems survive the real world/i);
-  assert.match(html, /Zyastra Agent Platform/);
-  assert.match(html, /AstraSAR Voice Runtime/);
   assert.match(html, /EchoPass/);
+  assert.match(html, /Nexus Realtime Chat/);
+  assert.match(html, /Vanta Movie Explorer/);
+  assert.match(html, /Developer Blog/);
+  assert.doesNotMatch(html, /Zyastra Agent Platform|AstraSAR Voice Runtime/);
   assert.match(html, /Software Development Engineer I/);
   assert.match(html, /khushbrar@gmail\.com/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/i);
@@ -50,6 +52,10 @@ test("ships the portfolio assets and animation system", async () => {
     readFile(new URL("../package.json", import.meta.url), "utf8"),
     access(new URL("../public/Khushpreet_Singh_Resume.pdf", import.meta.url)),
     access(new URL("../public/og.png", import.meta.url)),
+    access(new URL("../public/projects/echopass-dashboard.png", import.meta.url)),
+    access(new URL("../public/projects/chat-workspace.png", import.meta.url)),
+    access(new URL("../public/projects/movie-browse.png", import.meta.url)),
+    access(new URL("../public/projects/blog-home.png", import.meta.url)),
   ]);
 
   assert.match(page, /from "gsap"/);
@@ -57,7 +63,9 @@ test("ships the portfolio assets and animation system", async () => {
   assert.match(page, /prefers-reduced-motion/);
   assert.match(page, /portfolio-theme/);
   assert.match(page, /ProjectEntry/);
-  assert.match(page, /NamePlate/);
+  assert.match(page, /ProjectGallery/);
+  assert.match(page, /SignalName/);
+  assert.match(page, /theme-switch/);
   assert.match(layout, /og\.png/);
   assert.match(packageJson, /"gsap"/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
