@@ -304,15 +304,24 @@ function ProjectSlider({ project }: { project: Project }) {
 
   return (
     <div className="case-slider">
+      <div className="case-slider-bar">
+        <span>Screen archive</span>
+        <span><MoveHorizontal size={12} /> drag / swipe</span>
+        <span>{String(current + 1).padStart(2, "0")} / {String(project.screenshots.length).padStart(2, "0")}</span>
+      </div>
       <Carousel
         className="case-carousel"
-        opts={{ loop: true, align: "start", duration: 34 }}
+        opts={{ loop: false, align: "start", containScroll: "trimSnaps", duration: 30 }}
         setApi={setApi}
         aria-label={`${project.shortTitle} screenshot gallery`}
       >
         <CarouselContent>
           {project.screenshots.map((screenshot, index) => (
-            <CarouselItem key={screenshot.src} aria-label={`${index + 1} of ${project.screenshots.length}`}>
+            <CarouselItem
+              key={screenshot.src}
+              className={index === current ? "is-active" : ""}
+              aria-label={`${index + 1} of ${project.screenshots.length}`}
+            >
               <figure className="case-slide">
                 <div className={`case-shot case-shot--${screenshot.format ?? "desktop"}`}>
                   <img
@@ -324,6 +333,11 @@ function ProjectSlider({ project }: { project: Project }) {
                     draggable={false}
                   />
                 </div>
+                <figcaption>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <p>{screenshot.label}</p>
+                  <small>{screenshot.format === "mobile" ? "Mobile / responsive" : "Desktop"}</small>
+                </figcaption>
               </figure>
             </CarouselItem>
           ))}
@@ -331,9 +345,8 @@ function ProjectSlider({ project }: { project: Project }) {
 
         <div className="case-slider-rail">
           <div className="case-slider-copy" aria-live="polite">
-            <span>{String(current + 1).padStart(2, "0")}</span>
+            <span>Viewing</span>
             <p>{active.label}</p>
-            <small>{active.format === "mobile" ? "Mobile · responsive" : "Desktop"}</small>
           </div>
           <div className="case-slider-dots" aria-label="Choose screenshot">
             {project.screenshots.map((screenshot, index) => (
@@ -348,9 +361,8 @@ function ProjectSlider({ project }: { project: Project }) {
             ))}
           </div>
           <div className="case-slider-actions">
-            <span><MoveHorizontal size={12} /> drag / keys</span>
-            <CarouselPrevious aria-label="Previous screenshot"><ArrowLeft size={15} /></CarouselPrevious>
-            <CarouselNext aria-label="Next screenshot"><ArrowRight size={15} /></CarouselNext>
+            <CarouselPrevious aria-label="Previous screenshot"><ArrowLeft size={14} /><span>Prev</span></CarouselPrevious>
+            <CarouselNext aria-label="Next screenshot"><span>Next</span><ArrowRight size={14} /></CarouselNext>
           </div>
         </div>
       </Carousel>
