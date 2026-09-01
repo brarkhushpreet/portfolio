@@ -53,9 +53,13 @@ test("ships the portfolio assets and animation system", async () => {
     access(new URL("../public/Khushpreet_Singh_Resume.pdf", import.meta.url)),
     access(new URL("../public/og.png", import.meta.url)),
     access(new URL("../public/projects/echopass-dashboard.png", import.meta.url)),
+    access(new URL("../public/projects/echopass-mobile.png", import.meta.url)),
     access(new URL("../public/projects/chat-workspace.png", import.meta.url)),
+    access(new URL("../public/projects/chat-mobile.png", import.meta.url)),
     access(new URL("../public/projects/movie-browse.png", import.meta.url)),
+    access(new URL("../public/projects/movie-mobile.png", import.meta.url)),
     access(new URL("../public/projects/blog-home.png", import.meta.url)),
+    access(new URL("../public/projects/blog-mobile.png", import.meta.url)),
   ]);
 
   assert.match(page, /from "gsap"/);
@@ -63,7 +67,12 @@ test("ships the portfolio assets and animation system", async () => {
   assert.match(page, /prefers-reduced-motion/);
   assert.match(page, /portfolio-theme/);
   assert.match(page, /ProjectEntry/);
-  assert.match(page, /ProjectGallery/);
+  assert.match(page, /ProjectSlider/);
+  assert.match(page, /@\/components\/ui\/carousel/);
+  assert.match(page, /Responsive dashboard/);
+  assert.match(page, /Responsive workspace/);
+  assert.match(page, /Responsive discovery/);
+  assert.match(page, /Responsive reading/);
   assert.match(page, /SignalName/);
   assert.match(page, /theme-switch/);
   assert.match(layout, /og\.png/);

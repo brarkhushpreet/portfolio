@@ -2,9 +2,17 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { ArrowUpRight, Check, Copy } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Check, Copy, MoveHorizontal } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from "@/components/ui/carousel";
 import {
   useEffect,
   useLayoutEffect,
@@ -28,7 +36,7 @@ type Project = {
   stack: string[];
   link: string;
   linkLabel: string;
-  screenshots: { src: string; alt: string; label: string }[];
+  screenshots: { src: string; alt: string; label: string; format?: "desktop" | "mobile" }[];
 };
 
 const projects: Project[] = [
@@ -53,6 +61,8 @@ const projects: Project[] = [
       { src: "/projects/echopass-dashboard.png", alt: "EchoPass teacher analytics dashboard", label: "Teacher dashboard" },
       { src: "/projects/echopass-classroom.png", alt: "EchoPass classroom session controls", label: "Classroom controls" },
       { src: "/projects/echopass-attendance.png", alt: "EchoPass attendance analytics screen", label: "Attendance analytics" },
+      { src: "/projects/echopass-security.png", alt: "EchoPass passkey and device security screen", label: "Device security" },
+      { src: "/projects/echopass-mobile.png", alt: "EchoPass teacher dashboard on a mobile viewport", label: "Responsive dashboard", format: "mobile" },
     ],
   },
   {
@@ -76,6 +86,8 @@ const projects: Project[] = [
       { src: "/projects/chat-workspace-light.png", alt: "Nexus realtime chat workspace in light mode", label: "Light interface" },
       { src: "/projects/chat-space-menu.png", alt: "Nexus space management menu", label: "Space controls" },
       { src: "/projects/chat-signin.png", alt: "Nexus secure sign-in screen", label: "Authentication" },
+      { src: "/projects/chat-command-palette.png", alt: "Nexus command palette over the realtime workspace", label: "Quick navigation" },
+      { src: "/projects/chat-mobile.png", alt: "Nexus spaces and conversations on a mobile viewport", label: "Responsive workspace", format: "mobile" },
     ],
   },
   {
@@ -99,6 +111,8 @@ const projects: Project[] = [
       { src: "/projects/movie-details.png", alt: "Vanta Inception title details screen", label: "Title details" },
       { src: "/projects/movie-catalog.png", alt: "Vanta movie catalog screen", label: "Movie catalog" },
       { src: "/projects/movie-profiles.png", alt: "Vanta profile selection screen", label: "Profile selection" },
+      { src: "/projects/movie-profile-menu.png", alt: "Vanta profile controls over the cinematic home screen", label: "Profile controls" },
+      { src: "/projects/movie-mobile.png", alt: "Vanta cinematic discovery home on a mobile viewport", label: "Responsive discovery", format: "mobile" },
     ],
   },
   {
@@ -122,6 +136,8 @@ const projects: Project[] = [
       { src: "/projects/blog-articles.png", alt: "Developer blog article archive", label: "Article archive" },
       { src: "/projects/blog-article.png", alt: "Developer blog article reading view", label: "Reading experience" },
       { src: "/projects/blog-about.png", alt: "Developer blog about page", label: "About the publication" },
+      { src: "/projects/blog-search.png", alt: "Developer blog search results for WebSocket articles", label: "Search and filters" },
+      { src: "/projects/blog-mobile.png", alt: "Developer blog home page on a mobile viewport", label: "Responsive reading", format: "mobile" },
     ],
   },
 ];
@@ -270,23 +286,74 @@ function SignalName() {
   );
 }
 
-function ProjectGallery({ project }: { project: Project }) {
+function ProjectSlider({ project }: { project: Project }) {
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    if (!api) return;
+    const sync = () => setCurrent(api.selectedScrollSnap());
+    sync();
+    api.on("select", sync).on("reInit", sync);
+    return () => {
+      api.off("select", sync).off("reInit", sync);
+    };
+  }, [api]);
+
+  const active = project.screenshots[current] ?? project.screenshots[0];
+
   return (
-    <div className="case-gallery" aria-label={`${project.shortTitle} screenshots`}>
-      {project.screenshots.map((screenshot, index) => (
-        <figure key={screenshot.src}>
-          <div className="case-shot">
-            <img
-              src={screenshot.src}
-              alt={screenshot.alt}
-              width={1264}
-              height={720}
-              loading={index === 0 ? "eager" : "lazy"}
-            />
+    <div className="case-slider">
+      <Carousel
+        className="case-carousel"
+        opts={{ loop: true, align: "start", duration: 34 }}
+        setApi={setApi}
+        aria-label={`${project.shortTitle} screenshot gallery`}
+      >
+        <CarouselContent>
+          {project.screenshots.map((screenshot, index) => (
+            <CarouselItem key={screenshot.src} aria-label={`${index + 1} of ${project.screenshots.length}`}>
+              <figure className="case-slide">
+                <div className={`case-shot case-shot--${screenshot.format ?? "desktop"}`}>
+                  <img
+                    src={screenshot.src}
+                    alt={screenshot.alt}
+                    width={screenshot.format === "mobile" ? 390 : 1264}
+                    height={screenshot.format === "mobile" ? 844 : 720}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    draggable={false}
+                  />
+                </div>
+              </figure>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+
+        <div className="case-slider-rail">
+          <div className="case-slider-copy" aria-live="polite">
+            <span>{String(current + 1).padStart(2, "0")}</span>
+            <p>{active.label}</p>
+            <small>{active.format === "mobile" ? "Mobile · responsive" : "Desktop"}</small>
           </div>
-          <figcaption><span>{String(index + 1).padStart(2, "0")}</span>{screenshot.label}</figcaption>
-        </figure>
-      ))}
+          <div className="case-slider-dots" aria-label="Choose screenshot">
+            {project.screenshots.map((screenshot, index) => (
+              <button
+                type="button"
+                key={screenshot.src}
+                className={index === current ? "active" : ""}
+                onClick={() => api?.scrollTo(index)}
+                aria-label={`Show ${screenshot.label}`}
+                aria-current={index === current ? "true" : undefined}
+              ><i /></button>
+            ))}
+          </div>
+          <div className="case-slider-actions">
+            <span><MoveHorizontal size={12} /> drag / keys</span>
+            <CarouselPrevious aria-label="Previous screenshot"><ArrowLeft size={15} /></CarouselPrevious>
+            <CarouselNext aria-label="Next screenshot"><ArrowRight size={15} /></CarouselNext>
+          </div>
+        </div>
+      </Carousel>
     </div>
   );
 }
@@ -308,7 +375,7 @@ function ProjectEntry({ project, index, open, onToggle }: { project: Project; in
             <button onClick={onToggle} type="button">close <span>×</span></button>
           </div>
           <div className="case-meta"><span>{project.discipline}</span><span>{project.year}</span><span>{project.status}</span></div>
-          <ProjectGallery project={project} />
+          <ProjectSlider project={project} />
           <div className="case-copy">
             <h4>{project.description}</h4>
             <p>{project.story}</p>
