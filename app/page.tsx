@@ -2,10 +2,11 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { ArrowLeft, ArrowRight, ArrowUpRight, Check, Copy, MoveHorizontal } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, MoveHorizontal } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useSurfaceMotion } from "./use-surface-motion";
+import { ContactForm } from "./contact-form";
 import {
   Carousel,
   CarouselContent,
@@ -152,22 +153,22 @@ const capabilities = [
 
 const experience = [
   {
-    date: "May 2025 — Present",
+    date: "Jun 2026 — Present",
+    role: "Software Development Engineer II",
+    company: "Zyvka HR Tech",
+    copy: "Building and operating AI products across interfaces, backend services, realtime systems, and AWS infrastructure.",
+  },
+  {
+    date: "May 2025 — May 2026",
     role: "Software Development Engineer I",
     company: "Zyvka HR Tech",
-    copy: "Building and operating company AI products across product interfaces, backend services, realtime workers, data, and AWS. Details stay intentionally high-level because the work is production-specific.",
+    copy: "Developed product features, APIs, and realtime workers, with responsibility for deployments and production reliability.",
   },
   {
     date: "Jul 2024 — Apr 2025",
     role: "Software Development Engineer Intern",
     company: "Zyvka HR Tech",
-    copy: "Worked across a production platform migration, realtime product features, and repeatable delivery workflows while keeping company implementation details private.",
-  },
-  {
-    date: "Jun 2023 — Jul 2023",
-    role: "Summer Internship Trainee",
-    company: "Solitaire Infosys",
-    copy: "Built a practical MERN foundation through full-stack applications and API-driven product work.",
+    copy: "Contributed to a platform migration, realtime product features, and deployment workflows.",
   },
 ];
 
@@ -175,19 +176,15 @@ function SignalName() {
   const field = useRef<HTMLDivElement>(null);
   const rail = useRef<HTMLSpanElement>(null);
   const thumb = useRef<HTMLButtonElement>(null);
-  const readout = useRef<HTMLElement>(null);
   const dragging = useRef(false);
   const value = useRef(50);
-  const verticalValue = useRef(50);
   const animationFrame = useRef<number | null>(null);
   const spotlightFrame = useRef<number | null>(null);
   const reducedMotion = useRef(false);
 
-  const applyValue = (nextValue: number, nextVertical = verticalValue.current) => {
+  const applyValue = (nextValue: number) => {
     const next = Math.max(0, Math.min(100, nextValue));
-    const vertical = Math.max(0, Math.min(100, nextVertical));
     value.current = next;
-    verticalValue.current = vertical;
     if (animationFrame.current !== null) window.cancelAnimationFrame(animationFrame.current);
     animationFrame.current = window.requestAnimationFrame(() => {
       const horizontalOffset = next - 50;
@@ -199,18 +196,14 @@ function SignalName() {
       });
       field.current?.style.setProperty("--signal-pos", `${next}%`);
       thumb.current?.setAttribute("aria-valuenow", String(Math.round(next)));
-      if (readout.current) readout.current.textContent = `X ${String(Math.round(next)).padStart(3, "0")} · Y ${String(Math.round(vertical)).padStart(3, "0")}`;
       animationFrame.current = null;
     });
   };
 
-  const updateFromPointer = (clientX: number, clientY: number) => {
+  const updateFromPointer = (clientX: number) => {
     if (!rail.current) return;
     const bounds = rail.current.getBoundingClientRect();
-    applyValue(
-      ((clientX - bounds.left) / bounds.width) * 100,
-      (clientY / window.innerHeight) * 100,
-    );
+    applyValue(((clientX - bounds.left) / bounds.width) * 100);
   };
 
   const start = (event: PointerEvent<HTMLDivElement>) => {
@@ -219,16 +212,16 @@ function SignalName() {
     thumb.current?.focus({ preventScroll: true });
     event.currentTarget.setPointerCapture(event.pointerId);
     field.current?.classList.add("is-dragging");
-    updateFromPointer(event.clientX, event.clientY);
+    updateFromPointer(event.clientX);
   };
 
   const move = (event: PointerEvent<HTMLDivElement>) => {
-    if (dragging.current) updateFromPointer(event.clientX, event.clientY);
+    if (dragging.current) updateFromPointer(event.clientX);
   };
 
   const end = (event: PointerEvent<HTMLDivElement>) => {
     if (!dragging.current) return;
-    updateFromPointer(event.clientX, event.clientY);
+    updateFromPointer(event.clientX);
     dragging.current = false;
     field.current?.classList.remove("is-dragging");
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
@@ -272,12 +265,12 @@ function SignalName() {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const syncMotion = () => {
       reducedMotion.current = preference.matches;
-      applyValue(value.current, verticalValue.current);
+      applyValue(value.current);
       if (preference.matches) clearSpotlight();
     };
     syncMotion();
     preference.addEventListener("change", syncMotion);
-    applyValue(50, 50);
+    applyValue(50);
     return () => {
       if (animationFrame.current !== null) window.cancelAnimationFrame(animationFrame.current);
       if (spotlightFrame.current !== null) window.cancelAnimationFrame(spotlightFrame.current);
@@ -287,7 +280,6 @@ function SignalName() {
 
   return (
     <div className="signal-name" ref={field} onPointerMove={moveSpotlight} onPointerLeave={clearSpotlight}>
-      <span className="signal-kicker">KS / BUILD 04 · DRAG + RELEASE</span>
       <div className="signal-title-wrap">
         <h1 className="signal-title-base" aria-label="Khushpreet Singh">
           <span className="signal-word signal-word-primary">
@@ -301,9 +293,9 @@ function SignalName() {
       <div className="signal-field" onPointerDown={start} onPointerMove={move} onPointerUp={end} onPointerCancel={end}>
         <span className="signal-axis" ref={rail}>
           {Array.from({ length: 21 }).map((_, index) => <i key={index} />)}
-          <button ref={thumb} className="signal-thumb" type="button" role="slider" aria-label="Adjust name signal" aria-valuemin={0} aria-valuemax={100} aria-valuenow={50} onKeyDown={keyboardMove} />
+          <button ref={thumb} className="signal-thumb" type="button" role="slider" aria-label="Adjust letter tilt" aria-describedby="signal-hint" aria-valuemin={0} aria-valuemax={100} aria-valuenow={50} onKeyDown={keyboardMove} />
         </span>
-        <small ref={readout}>X 050 · Y 050</small>
+        <small id="signal-hint">Drag to tilt</small>
       </div>
     </div>
   );
@@ -373,8 +365,8 @@ function ProjectSlider({ project }: { project: Project }) {
   return (
     <div className="case-slider">
       <div className="case-slider-bar">
-        <span>Screen archive</span>
-        <span><MoveHorizontal size={12} /> scroll / drag</span>
+        <span>Screenshots</span>
+        <span><MoveHorizontal size={12} /> Swipe or drag</span>
         <span><b className="gallery-count" key={current}>{String(current + 1).padStart(2, "0")}</b> / {String(project.screenshots.length).padStart(2, "0")}</span>
       </div>
       <Carousel
@@ -538,13 +530,9 @@ function ProjectEntry({ project, index, open, onToggle }: { project: Project; in
 
 export default function Home() {
   const root = useRef<HTMLElement>(null);
-  const loaderCount = useRef<HTMLSpanElement>(null);
-  const copyTimeout = useRef<number | undefined>(undefined);
   const [activeProject, setActiveProject] = useState<number | null>(null);
   const [time, setTime] = useState("");
   const [theme, setTheme] = useState<"light" | "dark">("light");
-  const [copied, setCopied] = useState(false);
-  const [copyFailed, setCopyFailed] = useState(false);
 
   useSurfaceMotion(root);
 
@@ -586,32 +574,15 @@ export default function Home() {
     media.add({ reduced: "(prefers-reduced-motion: reduce)", animated: "(prefers-reduced-motion: no-preference)" }, (context) => {
       if (context.conditions?.reduced) {
         entered = true;
-        document.body.classList.remove("is-loading");
         return;
       }
 
-      if (!entered) document.body.classList.add("is-loading");
-      const counter = { value: 0 };
-      const intro = gsap.timeline({
-        defaults: { ease: "power3.out" },
-        onComplete: () => document.body.classList.remove("is-loading"),
-      });
+      const intro = gsap.timeline({ defaults: { ease: "power3.out" } });
       if (!entered) {
         gsap.set(".intro-enter", { opacity: 0, y: 12 });
         gsap.set(".signal-glyph", { opacity: 0, yPercent: 65, rotation: 5 });
         intro
-        .to(counter, {
-          value: 100,
-          duration: .65,
-          ease: "power2.inOut",
-          onUpdate: () => {
-            if (loaderCount.current) loaderCount.current.textContent = String(Math.round(counter.value)).padStart(3, "0");
-          },
-        })
-        .to(".loader-track i", { scaleX: 1, duration: .65, ease: "power2.inOut" }, 0)
-        .to(".loader-pip", { opacity: 1, stagger: 0.08, duration: 0.15 }, 0.1)
-        .to(".site-loader", { yPercent: -100, duration: .55, ease: "power4.inOut" }, ">+.04")
-        .to(".signal-glyph", { opacity: 1, yPercent: 0, rotation: 0, stagger: .028, duration: .85, clearProps: "transform,opacity" }, "-=.25")
+        .to(".signal-glyph", { opacity: 1, yPercent: 0, rotation: 0, stagger: .028, duration: .85, clearProps: "transform,opacity" }, .08)
         .fromTo(".signal-axis", { scaleX: 0 }, { scaleX: 1, duration: .8, clearProps: "transform" }, "<+.1")
         .to(".intro-enter", { opacity: 1, y: 0, stagger: .065, duration: .6, clearProps: "transform,opacity" }, "<+.08");
         entered = true;
@@ -621,13 +592,12 @@ export default function Home() {
         const rows = element.querySelectorAll(".capability-list > article, .project-item, .experience-list > article, .tool-lines > p");
         const timeline = gsap.timeline({ scrollTrigger: { trigger: element, start: "top 91%", once: true } });
         timeline.fromTo(element, { "--rule-scale": 0 }, { "--rule-scale": 1, duration: 1, ease: "power3.inOut" }, 0);
-        timeline.fromTo(element.querySelectorAll(":scope > .section-head, :scope > .about-copy, :scope.contact > div, :scope.contact > h2"),
+        timeline.fromTo(element.querySelectorAll(":scope > .section-head, :scope > .about-copy, :scope.contact > .contact-heading, :scope.contact > .contact-form"),
           { opacity: 0, y: 14 }, { opacity: 1, y: 0, stagger: .085, duration: .7, ease: "power3.out", clearProps: "transform,opacity" }, .08);
         if (rows.length) timeline.fromTo(rows, { opacity: 0, y: 12 },
           { opacity: 1, y: 0, stagger: .065, duration: .6, ease: "power3.out", clearProps: "transform,opacity" }, .16);
       });
 
-      return () => document.body.classList.remove("is-loading");
     }, root);
     // Expanding a case study changes every section's scroll position below it.
     let refreshTimeout: number | undefined;
@@ -640,11 +610,8 @@ export default function Home() {
       observer.disconnect();
       window.clearTimeout(refreshTimeout);
       media.revert();
-      document.body.classList.remove("is-loading");
     };
   }, []);
-
-  useEffect(() => () => window.clearTimeout(copyTimeout.current), []);
 
   const toggleTheme = () => {
     const next = theme === "light" ? "dark" : "light";
@@ -652,31 +619,10 @@ export default function Home() {
     try { window.localStorage.setItem("portfolio-theme", next); } catch { /* Theme still works for the current visit. */ }
   };
 
-  const copyEmail = async () => {
-    window.clearTimeout(copyTimeout.current);
-    try {
-      await navigator.clipboard.writeText("khushbrar@gmail.com");
-      setCopied(true);
-      setCopyFailed(false);
-    } catch {
-      setCopied(false);
-      setCopyFailed(true);
-    }
-    copyTimeout.current = window.setTimeout(() => { setCopied(false); setCopyFailed(false); }, 2600);
-  };
-
   return (
     <main className="shell" id="top" ref={root}>
-      <div className="site-loader" aria-hidden="true">
-        <div className="loader-inner">
-          <p><span>KS</span><span ref={loaderCount}>000</span></p>
-          <div className="loader-track"><i /></div>
-          <div className="loader-status"><span className="loader-pip">interface</span><span className="loader-pip">systems</span><span className="loader-pip">cloud</span></div>
-        </div>
-      </div>
-
       <header className="utility-bar intro-enter">
-        <a href="#top" aria-label="Back to top"><strong>KS</strong><span>portfolio / 2026</span></a>
+        <a href="#top" className="brand-mark" aria-label="Khushpreet Singh — back to top"><strong>KS<span aria-hidden="true">.</span></strong></a>
         <button className="theme-switch" type="button" onClick={toggleTheme} aria-pressed={theme === "dark"} aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}>
           <span className={theme === "light" ? "active" : ""}>Light</span>
           <i aria-hidden="true"><b /></i>
@@ -689,8 +635,7 @@ export default function Home() {
         <div className="intro-grid intro-enter">
           <div className="intro-copy">
             <p id="intro-title">Full-stack software engineer.</p>
-            <p>Building AI products at <mark>Zyvka</mark></p>
-            <small>v4.0 / 2026</small>
+            <p>SDE II at <mark>Zyvka</mark></p>
           </div>
           <aside>
             <nav aria-label="Site">
@@ -700,17 +645,16 @@ export default function Home() {
             </nav>
             <p>Sirsa, Haryana</p>
             <time>{time || "--:--:--"} IST</time>
-            <span className="system-health"><i />systems nominal</span>
           </aside>
         </div>
         <div className="now-panel intro-enter">
-          <div className="now-entry"><span>NOW / 01</span><p>Making AI systems survive the real world.</p><em><i />open to useful problems</em></div>
-          <p className="find-line">Elsewhere: <a href="https://github.com/brarkhushpreet/" target="_blank" rel="noreferrer">GitHub</a> · <button onClick={copyEmail}>email</button> · <a href="/Khushpreet_Singh_Resume.pdf" download>résumé ↓</a></p>
+          <div className="now-entry"><span>Focus</span><p>AI products, realtime systems, and cloud infrastructure.</p></div>
+          <p className="find-line"><a href="https://github.com/brarkhushpreet/" target="_blank" rel="noreferrer">GitHub</a> · <a href="#contact">Contact</a> · <a href="/Khushpreet_Singh_Resume.pdf" download>Résumé ↓</a></p>
         </div>
       </section>
 
       <section className="about reveal" id="about">
-        <header className="section-head"><p><span>PROFILE / 01</span>About the work</p><small>built end to end</small></header>
+        <header className="section-head"><h2>About</h2></header>
         <div className="about-copy">
           <p>I like the whole thing — the interface people touch, the service behind it, and the infrastructure that keeps it alive.</p>
           <p>My best work sits between product thinking and systems engineering: clear enough for a person, sturdy enough for production.</p>
@@ -727,7 +671,7 @@ export default function Home() {
       </section>
 
       <section className="projects reveal" id="projects" aria-label="Projects">
-        <header className="section-head"><p><span>INDEX / 04</span>Selected systems</p><small>open a project ↓</small></header>
+        <header className="section-head"><h2>Selected projects</h2></header>
         <div className="project-list">
           {projects.map((project, index) => (
             <ProjectEntry
@@ -742,7 +686,7 @@ export default function Home() {
       </section>
 
       <section className="experience reveal" id="experience">
-        <header className="section-head"><p><span>PATH / 03</span>Experience</p><small>work in motion</small></header>
+        <header className="section-head"><h2>Experience</h2></header>
         <div className="experience-list">
           {experience.map((item) => (
             <article key={item.date} data-surface>
@@ -754,7 +698,7 @@ export default function Home() {
       </section>
 
       <section className="toolbox reveal">
-        <header className="section-head"><p><span>STACK / 04</span>Working set</p><small>tools change, principles don’t</small></header>
+        <header className="section-head"><h2>Tech stack</h2></header>
         <div className="tool-lines">
           <p data-surface><span>interface</span>Next.js · React · TypeScript · CSS · GSAP</p>
           <p data-surface><span>server</span>Node.js · Express · Python · WebSockets</p>
@@ -763,24 +707,19 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="contact reveal" id="contact">
-        <div>
-          <i />
-          <p>Available for thoughtful engineering work.</p>
+      <section className="contact reveal" id="contact" aria-labelledby="contact-title">
+        <div className="contact-heading">
+          <h2 id="contact-title">Get in touch<span>.</span></h2>
+          <p>Have a project or a role in mind? Send me a message.</p>
         </div>
-        <h2>Have a useful problem<br />worth solving?</h2>
-        <div className="contact-links">
-          <a className="motion-link" data-magnetic href="mailto:khushbrar@gmail.com"><span className="magnetic-content">Let’s talk <ArrowUpRight size={17} /></span></a>
-          <button type="button" className={copied ? "is-copied" : ""} onClick={copyEmail}><span key={copied ? "copied" : "copy"} className="copy-icon">{copied ? <Check size={14} /> : <Copy size={14} />}</span>{copied ? "copied" : "copy email"}</button>
-        </div>
+        <ContactForm />
       </section>
 
       <footer>
-        <span>made by hand in Punjab · © {new Date().getFullYear()}</span>
-        <div><a href="https://github.com/brarkhushpreet/" target="_blank" rel="noreferrer">GitHub</a><a href="#top">back to top ↑</a></div>
+        <span>© {new Date().getFullYear()} Khushpreet Singh</span>
+        <div><a href="https://github.com/brarkhushpreet/" target="_blank" rel="noreferrer">GitHub</a><a href="#top">Back to top ↑</a></div>
       </footer>
 
-      <div className={`copy-toast ${copied || copyFailed ? "show" : ""}`} role="status">{copied ? <><Check size={14} />Email copied to clipboard</> : copyFailed ? "Copy unavailable — khushbrar@gmail.com" : ""}</div>
     </main>
   );
 }

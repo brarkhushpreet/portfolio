@@ -2,14 +2,15 @@ import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
-async function render() {
+async function render(path = "/", options = {}) {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
 
   return worker.fetch(
-    new Request("http://localhost/", {
+    new Request(`http://localhost${path}`, {
       headers: { accept: "text/html" },
+      ...options,
     }),
     {
       ASSETS: {
@@ -34,7 +35,7 @@ test("server-renders Khushpreet's portfolio", async () => {
     /<title>Khushpreet Singh — Full-Stack Software Engineer<\/title>/i,
   );
   assert.match(html, /Full-stack software engineer/i);
-  assert.match(html, /making AI systems survive the real world/i);
+  assert.match(html, /AI products, realtime systems, and cloud infrastructure/i);
   assert.match(html, /EchoPass/);
   assert.match(html, /Nexus Realtime Chat/);
   assert.match(html, /Vanta Movie Explorer/);
@@ -43,6 +44,16 @@ test("server-renders Khushpreet's portfolio", async () => {
   assert.match(html, /Software Development Engineer I/);
   assert.match(html, /khushbrar@gmail\.com/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/i);
+});
+
+test("the built contact route validates submissions before email delivery", async () => {
+  const response = await render("/api/contact", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Origin: "http://localhost" },
+    body: JSON.stringify({ name: "", email: "invalid", message: "", website: "" }),
+  });
+  assert.equal(response.status, 422);
+  assert.deepEqual(await response.json(), { success: false });
 });
 
 test("ships the portfolio assets and animation system", async () => {
