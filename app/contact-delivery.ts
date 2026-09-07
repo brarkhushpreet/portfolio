@@ -1,4 +1,4 @@
-export const CONTACT_EMAIL = "khushbrar@gmail.com";
+export const CONTACT_EMAIL = "khushbrar605@gmail.com";
 export const CONTACT_ENDPOINT = `https://formsubmit.co/ajax/${CONTACT_EMAIL}`;
 
 export type ContactMessage = { name: string; email: string; message: string; website: string };

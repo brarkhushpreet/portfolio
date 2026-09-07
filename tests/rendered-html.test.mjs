@@ -42,7 +42,7 @@ test("server-renders Khushpreet's portfolio", async () => {
   assert.match(html, /Developer Blog/);
   assert.doesNotMatch(html, /Zyastra Agent Platform|AstraSAR Voice Runtime/);
   assert.match(html, /Software Development Engineer I/);
-  assert.match(html, /khushbrar@gmail\.com/);
+  assert.match(html, /khushbrar605@gmail\.com/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/i);
 });
 
