@@ -69,6 +69,12 @@ test("ships the portfolio assets and animation system", async () => {
   assert.match(page, /ProjectEntry/);
   assert.match(page, /ProjectSlider/);
   assert.match(page, /@\/components\/ui\/carousel/);
+  assert.match(page, /addEventListener\("wheel"/);
+  assert.match(page, /useState<number \| null>\(null\)/);
+  assert.match(page, /align: "center"/);
+  assert.match(page, /is-aligning-project/);
+  assert.match(page, /aria-label={`Close \$\{project\.shortTitle\} project`}/);
+  assert.doesNotMatch(page, />close <span>/);
   assert.match(page, /Responsive dashboard/);
   assert.match(page, /Responsive workspace/);
   assert.match(page, /Responsive discovery/);

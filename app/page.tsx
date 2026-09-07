@@ -5,6 +5,7 @@
 import { ArrowLeft, ArrowRight, ArrowUpRight, Check, Copy, MoveHorizontal } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useSurfaceMotion } from "./use-surface-motion";
 import {
   Carousel,
   CarouselContent,
@@ -179,6 +180,8 @@ function SignalName() {
   const value = useRef(50);
   const verticalValue = useRef(50);
   const animationFrame = useRef<number | null>(null);
+  const spotlightFrame = useRef<number | null>(null);
+  const reducedMotion = useRef(false);
 
   const applyValue = (nextValue: number, nextVertical = verticalValue.current) => {
     const next = Math.max(0, Math.min(100, nextValue));
@@ -192,7 +195,7 @@ function SignalName() {
       field.current?.querySelectorAll<HTMLElement>(".signal-char").forEach((character, index) => {
         const direction = index % 2 === 0 ? 1 : -1;
         const rotation = rotationProgress * direction * (2.4 + (index % 3) * 0.36);
-        character.style.setProperty("--char-rotation", `${rotation}deg`);
+        character.style.setProperty("--char-rotation", `${reducedMotion.current ? 0 : rotation}deg`);
       });
       field.current?.style.setProperty("--signal-pos", `${next}%`);
       thumb.current?.setAttribute("aria-valuenow", String(Math.round(next)));
@@ -211,7 +214,9 @@ function SignalName() {
   };
 
   const start = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) return;
     dragging.current = true;
+    thumb.current?.focus({ preventScroll: true });
     event.currentTarget.setPointerCapture(event.pointerId);
     field.current?.classList.add("is-dragging");
     updateFromPointer(event.clientX, event.clientY);
@@ -240,15 +245,23 @@ function SignalName() {
   };
 
   const moveSpotlight = (event: PointerEvent<HTMLDivElement>) => {
-    if ((event.target as HTMLElement).closest(".signal-field")) return;
-    field.current?.querySelectorAll<HTMLElement>(".signal-char").forEach((character) => {
-      const bounds = character.getBoundingClientRect();
-      character.style.setProperty("--char-spot-x", `${event.clientX - bounds.left}px`);
-      character.style.setProperty("--char-spot-y", `${event.clientY - bounds.top}px`);
+    if (event.pointerType !== "mouse" || reducedMotion.current || (event.target as HTMLElement).closest(".signal-field")) return;
+    const { clientX, clientY } = event;
+    if (spotlightFrame.current !== null) window.cancelAnimationFrame(spotlightFrame.current);
+    spotlightFrame.current = window.requestAnimationFrame(() => {
+      const characters = Array.from(field.current?.querySelectorAll<HTMLElement>(".signal-char") ?? []);
+      const bounds = characters.map((character) => character.getBoundingClientRect());
+      characters.forEach((character, index) => {
+        character.style.setProperty("--char-spot-x", `${clientX - bounds[index].left}px`);
+        character.style.setProperty("--char-spot-y", `${clientY - bounds[index].top}px`);
+      });
+      spotlightFrame.current = null;
     });
   };
 
   const clearSpotlight = () => {
+    if (spotlightFrame.current !== null) window.cancelAnimationFrame(spotlightFrame.current);
+    spotlightFrame.current = null;
     field.current?.querySelectorAll<HTMLElement>(".signal-char").forEach((character) => {
       character.style.setProperty("--char-spot-x", "-999px");
       character.style.setProperty("--char-spot-y", "-999px");
@@ -256,9 +269,19 @@ function SignalName() {
   };
 
   useLayoutEffect(() => {
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncMotion = () => {
+      reducedMotion.current = preference.matches;
+      applyValue(value.current, verticalValue.current);
+      if (preference.matches) clearSpotlight();
+    };
+    syncMotion();
+    preference.addEventListener("change", syncMotion);
     applyValue(50, 50);
     return () => {
       if (animationFrame.current !== null) window.cancelAnimationFrame(animationFrame.current);
+      if (spotlightFrame.current !== null) window.cancelAnimationFrame(spotlightFrame.current);
+      preference.removeEventListener("change", syncMotion);
     };
   }, []);
 
@@ -268,10 +291,10 @@ function SignalName() {
       <div className="signal-title-wrap">
         <h1 className="signal-title-base" aria-label="Khushpreet Singh">
           <span className="signal-word signal-word-primary">
-            {Array.from("khushpreet").map((character, index) => <span className="signal-char" key={`${character}-${index}`}>{character}</span>)}
+            {Array.from("khushpreet").map((character, index) => <span className="signal-glyph" key={`${character}-${index}`}><span className="signal-char">{character}</span></span>)}
           </span>
           <span className="signal-word signal-word-secondary">
-            {Array.from("singh").map((character, index) => <span className="signal-char" key={`${character}-${index}`}>{character}</span>)}
+            {Array.from("singh").map((character, index) => <span className="signal-glyph" key={`${character}-${index}`}><span className="signal-char">{character}</span></span>)}
           </span>
         </h1>
       </div>
@@ -300,18 +323,63 @@ function ProjectSlider({ project }: { project: Project }) {
     };
   }, [api]);
 
+  useEffect(() => {
+    if (!api) return;
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncMotion = () => api.reInit({ duration: preference.matches ? 0 : 30 });
+    syncMotion();
+    preference.addEventListener("change", syncMotion);
+    return () => preference.removeEventListener("change", syncMotion);
+  }, [api]);
+
+  useEffect(() => {
+    if (!api) return;
+
+    const viewport = api.rootNode();
+    let wheelGestureActive = false;
+    let wheelRelease: number | undefined;
+
+    const handleWheel = (event: WheelEvent) => {
+      const horizontalDelta = Math.abs(event.deltaX) >= Math.abs(event.deltaY)
+        ? event.deltaX
+        : event.shiftKey
+          ? event.deltaY
+          : 0;
+
+      if (Math.abs(horizontalDelta) < 6) return;
+
+      event.preventDefault();
+      window.clearTimeout(wheelRelease);
+      wheelRelease = window.setTimeout(() => {
+        wheelGestureActive = false;
+      }, 180);
+
+      if (wheelGestureActive) return;
+      wheelGestureActive = true;
+
+      if (horizontalDelta > 0) api.scrollNext();
+      else api.scrollPrev();
+    };
+
+    viewport.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      window.clearTimeout(wheelRelease);
+      viewport.removeEventListener("wheel", handleWheel);
+    };
+  }, [api]);
+
   const active = project.screenshots[current] ?? project.screenshots[0];
 
   return (
     <div className="case-slider">
       <div className="case-slider-bar">
         <span>Screen archive</span>
-        <span><MoveHorizontal size={12} /> drag / swipe</span>
-        <span>{String(current + 1).padStart(2, "0")} / {String(project.screenshots.length).padStart(2, "0")}</span>
+        <span><MoveHorizontal size={12} /> scroll / drag</span>
+        <span><b className="gallery-count" key={current}>{String(current + 1).padStart(2, "0")}</b> / {String(project.screenshots.length).padStart(2, "0")}</span>
       </div>
       <Carousel
         className="case-carousel"
-        opts={{ loop: false, align: "start", containScroll: "trimSnaps", duration: 30 }}
+        opts={{ loop: false, align: "center", containScroll: false, duration: 30 }}
         setApi={setApi}
         aria-label={`${project.shortTitle} screenshot gallery`}
       >
@@ -346,7 +414,7 @@ function ProjectSlider({ project }: { project: Project }) {
         <div className="case-slider-rail">
           <div className="case-slider-copy" aria-live="polite">
             <span>Viewing</span>
-            <p>{active.label}</p>
+            <p key={active.src}>{active.label}</p>
           </div>
           <div className="case-slider-dots" aria-label="Choose screenshot">
             {project.screenshots.map((screenshot, index) => (
@@ -371,20 +439,83 @@ function ProjectSlider({ project }: { project: Project }) {
 }
 
 function ProjectEntry({ project, index, open, onToggle }: { project: Project; index: number; open: boolean; onToggle: () => void }) {
+  const caseHeading = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open && trigger.current?.nextElementSibling?.contains(document.activeElement)) {
+      trigger.current.focus({ preventScroll: true });
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open || !caseHeading.current) return;
+
+    const target = caseHeading.current;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const startY = window.scrollY;
+    const startedAt = performance.now();
+    const duration = reducedMotion ? 0 : 720;
+    let animationFrame = 0;
+    let cancelled = false;
+
+    document.documentElement.classList.add("is-aligning-project");
+
+    const stop = () => {
+      cancelled = true;
+      window.cancelAnimationFrame(animationFrame);
+      document.documentElement.classList.remove("is-aligning-project");
+    };
+
+    const align = (now: number) => {
+      if (cancelled) return;
+
+      const scrollMargin = Number.parseFloat(window.getComputedStyle(target).scrollMarginTop) || 0;
+      const targetY = target.getBoundingClientRect().top + window.scrollY - scrollMargin;
+      const progress = duration === 0 ? 1 : Math.min((now - startedAt) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 4);
+
+      window.scrollTo({ top: startY + (targetY - startY) * eased, behavior: "auto" });
+
+      if (progress < 1) {
+        animationFrame = window.requestAnimationFrame(align);
+        return;
+      }
+
+      window.scrollTo({
+        top: target.getBoundingClientRect().top + window.scrollY - scrollMargin,
+        behavior: "auto",
+      });
+      document.documentElement.classList.remove("is-aligning-project");
+    };
+
+    animationFrame = window.requestAnimationFrame(align);
+    window.addEventListener("wheel", stop, { passive: true });
+    window.addEventListener("touchstart", stop, { passive: true });
+
+    return () => {
+      stop();
+      window.removeEventListener("wheel", stop);
+      window.removeEventListener("touchstart", stop);
+    };
+  }, [open]);
+
   return (
     <article className={`project-item ${open ? "is-open" : ""}`}>
-      <button className="project-trigger" onClick={onToggle} aria-expanded={open} aria-controls={`${project.id}-detail`}>
+      <button ref={trigger} type="button" className="project-trigger" data-surface onClick={onToggle} aria-expanded={open} aria-controls={`${project.id}-detail`}>
         <span className="project-index">{String(index + 1).padStart(2, "0")}</span>
         <span className="project-title">{project.shortTitle}</span>
         <span className="project-subtitle">{project.subtitle}</span>
         <span className="project-arrow" aria-hidden="true">↗</span>
         <time>{project.year}</time>
       </button>
-      <div className="project-reveal" id={`${project.id}-detail`}>
+      <div className="project-reveal" id={`${project.id}-detail`} inert={!open} aria-hidden={!open}>
         <div className="project-reveal-inner">
-          <div className="case-head">
+          <div className="case-head" ref={caseHeading}>
             <h3>{project.title}</h3>
-            <button onClick={onToggle} type="button">close <span>×</span></button>
+            <button className="case-close" onClick={() => { trigger.current?.focus({ preventScroll: true }); onToggle(); }} type="button" aria-label={`Close ${project.shortTitle} project`}>
+              <span aria-hidden="true">×</span>
+            </button>
           </div>
           <div className="case-meta"><span>{project.discipline}</span><span>{project.year}</span><span>{project.status}</span></div>
           <ProjectSlider project={project} />
@@ -397,7 +528,7 @@ function ProjectEntry({ project, index, open, onToggle }: { project: Project; in
           </div>
           <div className="case-bottom">
             <div className="case-stack">{project.stack.map((item) => <span key={item}>{item}</span>)}</div>
-            <a href={project.link} target="_blank" rel="noreferrer">{project.linkLabel} <ArrowUpRight size={14} /></a>
+            <a className="motion-link" href={project.link} target="_blank" rel="noreferrer">{project.linkLabel} <ArrowUpRight size={14} /></a>
           </div>
         </div>
       </div>
@@ -408,13 +539,18 @@ function ProjectEntry({ project, index, open, onToggle }: { project: Project; in
 export default function Home() {
   const root = useRef<HTMLElement>(null);
   const loaderCount = useRef<HTMLSpanElement>(null);
-  const [activeProject, setActiveProject] = useState<number | null>(0);
+  const copyTimeout = useRef<number | undefined>(undefined);
+  const [activeProject, setActiveProject] = useState<number | null>(null);
   const [time, setTime] = useState("");
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
+
+  useSurfaceMotion(root);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("portfolio-theme");
+    let stored: string | null = null;
+    try { stored = window.localStorage.getItem("portfolio-theme"); } catch { /* System theme remains available when storage is blocked. */ }
     const next = stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
     // Theme preferences are browser-only and must be synchronized after hydration.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -424,7 +560,6 @@ export default function Home() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    window.localStorage.setItem("portfolio-theme", theme);
   }, [theme]);
 
   useEffect(() => {
@@ -435,61 +570,99 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const close = (event: KeyboardEvent) => event.key === "Escape" && setActiveProject(null);
+    const close = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      root.current?.querySelector<HTMLButtonElement>(".project-item.is-open > .project-trigger")?.focus({ preventScroll: true });
+      setActiveProject(null);
+    };
     window.addEventListener("keydown", close);
     return () => window.removeEventListener("keydown", close);
   }, []);
 
   useLayoutEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const context = gsap.context(() => {
-      if (reduced) {
-        gsap.set(".site-loader", { display: "none" });
-        gsap.set(".intro-enter, .reveal", { opacity: 1, y: 0 });
+    const media = gsap.matchMedia();
+    let entered = false;
+    media.add({ reduced: "(prefers-reduced-motion: reduce)", animated: "(prefers-reduced-motion: no-preference)" }, (context) => {
+      if (context.conditions?.reduced) {
+        entered = true;
+        document.body.classList.remove("is-loading");
         return;
       }
 
-      document.body.classList.add("is-loading");
+      if (!entered) document.body.classList.add("is-loading");
       const counter = { value: 0 };
       const intro = gsap.timeline({
         defaults: { ease: "power3.out" },
         onComplete: () => document.body.classList.remove("is-loading"),
       });
-      gsap.set(".intro-enter", { opacity: 0, y: 16 });
-      gsap.set(".signal-title-base", { opacity: 0, y: 24 });
-      intro
+      if (!entered) {
+        gsap.set(".intro-enter", { opacity: 0, y: 12 });
+        gsap.set(".signal-glyph", { opacity: 0, yPercent: 65, rotation: 5 });
+        intro
         .to(counter, {
           value: 100,
-          duration: 1.15,
+          duration: .65,
           ease: "power2.inOut",
           onUpdate: () => {
             if (loaderCount.current) loaderCount.current.textContent = String(Math.round(counter.value)).padStart(3, "0");
           },
         })
-        .to(".loader-track i", { scaleX: 1, duration: 1.15, ease: "power2.inOut" }, 0)
+        .to(".loader-track i", { scaleX: 1, duration: .65, ease: "power2.inOut" }, 0)
         .to(".loader-pip", { opacity: 1, stagger: 0.08, duration: 0.15 }, 0.1)
-        .to(".site-loader", { yPercent: -100, duration: 0.72, ease: "power4.inOut" }, ">+.08")
-        .to(".signal-title-base", { opacity: 1, y: 0, duration: 0.72, clearProps: "transform,opacity" }, "-=.25")
-        .to(".intro-enter", { opacity: 1, y: 0, stagger: 0.07, duration: 0.52 }, "-=.52");
+        .to(".site-loader", { yPercent: -100, duration: .55, ease: "power4.inOut" }, ">+.04")
+        .to(".signal-glyph", { opacity: 1, yPercent: 0, rotation: 0, stagger: .028, duration: .85, clearProps: "transform,opacity" }, "-=.25")
+        .fromTo(".signal-axis", { scaleX: 0 }, { scaleX: 1, duration: .8, clearProps: "transform" }, "<+.1")
+        .to(".intro-enter", { opacity: 1, y: 0, stagger: .065, duration: .6, clearProps: "transform,opacity" }, "<+.08");
+        entered = true;
+      }
 
       gsap.utils.toArray<HTMLElement>(".reveal").forEach((element) => {
-        gsap.fromTo(element, { opacity: 0, y: 22 }, {
-          opacity: 1,
-          y: 0,
-          duration: 0.75,
-          ease: "power3.out",
-          scrollTrigger: { trigger: element, start: "top 88%", once: true },
-        });
+        const rows = element.querySelectorAll(".capability-list > article, .project-item, .experience-list > article, .tool-lines > p");
+        const timeline = gsap.timeline({ scrollTrigger: { trigger: element, start: "top 91%", once: true } });
+        timeline.fromTo(element, { "--rule-scale": 0 }, { "--rule-scale": 1, duration: 1, ease: "power3.inOut" }, 0);
+        timeline.fromTo(element.querySelectorAll(":scope > .section-head, :scope > .about-copy, :scope.contact > div, :scope.contact > h2"),
+          { opacity: 0, y: 14 }, { opacity: 1, y: 0, stagger: .085, duration: .7, ease: "power3.out", clearProps: "transform,opacity" }, .08);
+        if (rows.length) timeline.fromTo(rows, { opacity: 0, y: 12 },
+          { opacity: 1, y: 0, stagger: .065, duration: .6, ease: "power3.out", clearProps: "transform,opacity" }, .16);
       });
+
+      return () => document.body.classList.remove("is-loading");
     }, root);
-    return () => context.revert();
+    // Expanding a case study changes every section's scroll position below it.
+    let refreshTimeout: number | undefined;
+    const observer = new ResizeObserver(() => {
+      window.clearTimeout(refreshTimeout);
+      refreshTimeout = window.setTimeout(() => ScrollTrigger.refresh(), 120);
+    });
+    if (root.current) observer.observe(root.current);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(refreshTimeout);
+      media.revert();
+      document.body.classList.remove("is-loading");
+    };
   }, []);
 
+  useEffect(() => () => window.clearTimeout(copyTimeout.current), []);
+
+  const toggleTheme = () => {
+    const next = theme === "light" ? "dark" : "light";
+    setTheme(next);
+    try { window.localStorage.setItem("portfolio-theme", next); } catch { /* Theme still works for the current visit. */ }
+  };
+
   const copyEmail = async () => {
-    await navigator.clipboard.writeText("khushbrar@gmail.com");
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1800);
+    window.clearTimeout(copyTimeout.current);
+    try {
+      await navigator.clipboard.writeText("khushbrar@gmail.com");
+      setCopied(true);
+      setCopyFailed(false);
+    } catch {
+      setCopied(false);
+      setCopyFailed(true);
+    }
+    copyTimeout.current = window.setTimeout(() => { setCopied(false); setCopyFailed(false); }, 2600);
   };
 
   return (
@@ -504,7 +677,7 @@ export default function Home() {
 
       <header className="utility-bar intro-enter">
         <a href="#top" aria-label="Back to top"><strong>KS</strong><span>portfolio / 2026</span></a>
-        <button className="theme-switch" type="button" onClick={() => setTheme(theme === "light" ? "dark" : "light")} aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}>
+        <button className="theme-switch" type="button" onClick={toggleTheme} aria-pressed={theme === "dark"} aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}>
           <span className={theme === "light" ? "active" : ""}>Light</span>
           <i aria-hidden="true"><b /></i>
           <span className={theme === "dark" ? "active" : ""}>Dark</span>
@@ -521,9 +694,9 @@ export default function Home() {
           </div>
           <aside>
             <nav aria-label="Site">
-              <a href="#about">About</a>
-              <a href="#projects">Projects</a>
-              <a href="#experience">Experience</a>
+              <a href="#about" aria-label="About"><span data-label="About">About</span></a>
+              <a href="#projects" aria-label="Projects"><span data-label="Projects">Projects</span></a>
+              <a href="#experience" aria-label="Experience"><span data-label="Experience">Experience</span></a>
             </nav>
             <p>Sirsa, Haryana</p>
             <time>{time || "--:--:--"} IST</time>
@@ -544,7 +717,7 @@ export default function Home() {
         </div>
         <div className="capability-list">
           {capabilities.map(([number, title, copy]) => (
-            <article key={number}>
+            <article key={number} data-surface>
               <span>{number}</span>
               <strong>{title}</strong>
               <p>{copy}</p>
@@ -572,7 +745,7 @@ export default function Home() {
         <header className="section-head"><p><span>PATH / 03</span>Experience</p><small>work in motion</small></header>
         <div className="experience-list">
           {experience.map((item) => (
-            <article key={item.date}>
+            <article key={item.date} data-surface>
               <time>{item.date}</time>
               <div><h3>{item.role}</h3><p>{item.company}</p><span>{item.copy}</span></div>
             </article>
@@ -583,10 +756,10 @@ export default function Home() {
       <section className="toolbox reveal">
         <header className="section-head"><p><span>STACK / 04</span>Working set</p><small>tools change, principles don’t</small></header>
         <div className="tool-lines">
-          <p><span>interface</span>Next.js · React · TypeScript · CSS · GSAP</p>
-          <p><span>server</span>Node.js · Express · Python · WebSockets</p>
-          <p><span>data</span>PostgreSQL · Prisma · Redis · BullMQ</p>
-          <p><span>delivery</span>AWS · EC2 · RDS · S3 · PM2 · GitHub Actions</p>
+          <p data-surface><span>interface</span>Next.js · React · TypeScript · CSS · GSAP</p>
+          <p data-surface><span>server</span>Node.js · Express · Python · WebSockets</p>
+          <p data-surface><span>data</span>PostgreSQL · Prisma · Redis · BullMQ</p>
+          <p data-surface><span>delivery</span>AWS · EC2 · RDS · S3 · PM2 · GitHub Actions</p>
         </div>
       </section>
 
@@ -597,8 +770,8 @@ export default function Home() {
         </div>
         <h2>Have a useful problem<br />worth solving?</h2>
         <div className="contact-links">
-          <a href="mailto:khushbrar@gmail.com">Let’s talk <ArrowUpRight size={17} /></a>
-          <button onClick={copyEmail}>{copied ? <Check size={14} /> : <Copy size={14} />}{copied ? "copied" : "copy email"}</button>
+          <a className="motion-link" data-magnetic href="mailto:khushbrar@gmail.com"><span className="magnetic-content">Let’s talk <ArrowUpRight size={17} /></span></a>
+          <button type="button" className={copied ? "is-copied" : ""} onClick={copyEmail}><span key={copied ? "copied" : "copy"} className="copy-icon">{copied ? <Check size={14} /> : <Copy size={14} />}</span>{copied ? "copied" : "copy email"}</button>
         </div>
       </section>
 
@@ -607,7 +780,7 @@ export default function Home() {
         <div><a href="https://github.com/brarkhushpreet/" target="_blank" rel="noreferrer">GitHub</a><a href="#top">back to top ↑</a></div>
       </footer>
 
-      <div className={`copy-toast ${copied ? "show" : ""}`} role="status">email copied to clipboard</div>
+      <div className={`copy-toast ${copied || copyFailed ? "show" : ""}`} role="status">{copied ? <><Check size={14} />Email copied to clipboard</> : copyFailed ? "Copy unavailable — khushbrar@gmail.com" : ""}</div>
     </main>
   );
 }
