@@ -1,0 +1,10 @@
+WEBVTT
+
+00:00.000 --> 00:03.000
+Room signal: the current acoustic sequence.
+
+00:03.000 --> 00:07.000
+Switch to location-based verification.
+
+00:07.000 --> 00:10.000
+Return to the active room signal.

@@ -2,11 +2,14 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { ArrowLeft, ArrowRight, ArrowUpRight, MoveHorizontal } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Expand, MoveHorizontal, Pause, Play } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useSurfaceMotion } from "./use-surface-motion";
 import { ContactForm } from "./contact-form";
+import { GalleryMotion } from "./gallery-motion";
+import { OpeningLoader } from "./opening-loader";
+import { projectStories, type PreviewId } from "./project-stories";
 import {
   Carousel,
   CarouselContent,
@@ -17,6 +20,7 @@ import {
 } from "@/components/ui/carousel";
 import {
   useEffect,
+  useCallback,
   useLayoutEffect,
   useRef,
   useState,
@@ -25,7 +29,7 @@ import {
 } from "react";
 
 type Project = {
-  id: string;
+  id: PreviewId;
   title: string;
   shortTitle: string;
   subtitle: string;
@@ -38,7 +42,7 @@ type Project = {
   stack: string[];
   link: string;
   linkLabel: string;
-  screenshots: { src: string; alt: string; label: string; format?: "desktop" | "mobile" }[];
+  screenshots: { src: string; video?: string; alt: string; label: string; format?: "desktop" | "mobile" }[];
 };
 
 const projects: Project[] = [
@@ -59,12 +63,12 @@ const projects: Project[] = [
     link: "https://github.com/brarkhushpreet/AMS",
     linkLabel: "View repository",
     screenshots: [
-      { src: "/projects/echopass-product.png", alt: "EchoPass product capabilities overview", label: "Product overview" },
-      { src: "/projects/echopass-dashboard.png", alt: "EchoPass teacher analytics dashboard", label: "Teacher dashboard" },
-      { src: "/projects/echopass-classroom.png", alt: "EchoPass classroom session controls", label: "Classroom controls" },
-      { src: "/projects/echopass-attendance.png", alt: "EchoPass attendance analytics screen", label: "Attendance analytics" },
-      { src: "/projects/echopass-security.png", alt: "EchoPass passkey and device security screen", label: "Device security" },
-      { src: "/projects/echopass-mobile.png", alt: "EchoPass teacher dashboard on a mobile viewport", label: "Responsive dashboard", format: "mobile" },
+      { src: "/projects/echopass-theme-motion.webp", video: "/projects/echopass-theme-motion.mp4", alt: "Switching the EchoPass teacher workspace from light to dark mode", label: "Light → dark" },
+      { src: "/projects/echopass-classrooms-dark.jpg", alt: "EchoPass classroom directory and attendance summaries in dark mode", label: "Classroom directory · dark" },
+      { src: "/projects/echopass-filter-motion.webp", video: "/projects/echopass-filter-motion.mp4", alt: "Filtering EchoPass attendance by verification method", label: "Filter attendance" },
+      { src: "/projects/echopass-method-motion.webp", video: "/projects/echopass-method-motion.mp4", alt: "Switching between location and ultrasound classroom controls", label: "Choose a presence check" },
+      { src: "/projects/echopass-current-mobile-light.jpg", alt: "Updated EchoPass teacher dashboard on mobile in light mode", label: "Mobile · light", format: "mobile" },
+      { src: "/projects/echopass-classrooms-mobile.jpg", alt: "EchoPass classroom directory on a phone in dark mode", label: "Mobile classrooms · dark", format: "mobile" },
     ],
   },
   {
@@ -84,12 +88,12 @@ const projects: Project[] = [
     link: "https://github.com/brarkhushpreet/Chat-Application-nextjs",
     linkLabel: "View repository",
     screenshots: [
-      { src: "/projects/chat-workspace.png", alt: "Nexus realtime chat workspace in dark mode", label: "Realtime workspace" },
-      { src: "/projects/chat-workspace-light.png", alt: "Nexus realtime chat workspace in light mode", label: "Light interface" },
-      { src: "/projects/chat-space-menu.png", alt: "Nexus space management menu", label: "Space controls" },
-      { src: "/projects/chat-signin.png", alt: "Nexus secure sign-in screen", label: "Authentication" },
-      { src: "/projects/chat-command-palette.png", alt: "Nexus command palette over the realtime workspace", label: "Quick navigation" },
-      { src: "/projects/chat-mobile.png", alt: "Nexus spaces and conversations on a mobile viewport", label: "Responsive workspace", format: "mobile" },
+      { src: "/projects/chat-theme-motion.webp", video: "/projects/chat-theme-motion.mp4", alt: "Switching the Nexus conversation workspace from light to dark mode", label: "Light → dark" },
+      { src: "/projects/chat-people-dark.jpg", alt: "Nexus people directory in dark mode with fictional demo members", label: "People directory · dark" },
+      { src: "/projects/chat-compose-motion.webp", video: "/projects/chat-compose-motion.mp4", alt: "Composing a draft in the updated Nexus light workspace", label: "Compose in context" },
+      { src: "/projects/chat-search-motion.webp", video: "/projects/chat-search-motion.mp4", alt: "Searching rooms in Nexus’s dark-mode command palette", label: "Quick navigation" },
+      { src: "/projects/chat-current-mobile-light.jpg", alt: "Updated Nexus conversation on mobile in light mode", label: "Mobile · light", format: "mobile" },
+      { src: "/projects/chat-navigation-mobile.jpg", alt: "Nexus mobile navigation showing rooms and direct messages in dark mode", label: "Mobile navigation · dark", format: "mobile" },
     ],
   },
   {
@@ -109,8 +113,8 @@ const projects: Project[] = [
     link: "https://movie-website-gules.vercel.app",
     linkLabel: "Visit live site",
     screenshots: [
-      { src: "/projects/movie-browse.png", alt: "Vanta movie discovery home screen", label: "Discovery home" },
-      { src: "/projects/movie-details.png", alt: "Vanta Inception title details screen", label: "Title details" },
+      { src: "/projects/movie-discover-motion.webp", video: "/projects/movie-discover-motion.mp4", alt: "Opening Inception from Vanta’s discovery screen", label: "Discover a title" },
+      { src: "/projects/movie-save-motion.webp", video: "/projects/movie-save-motion.mp4", alt: "Saving Inception and opening My List in Vanta", label: "Save to My List" },
       { src: "/projects/movie-catalog.png", alt: "Vanta movie catalog screen", label: "Movie catalog" },
       { src: "/projects/movie-profiles.png", alt: "Vanta profile selection screen", label: "Profile selection" },
       { src: "/projects/movie-profile-menu.png", alt: "Vanta profile controls over the cinematic home screen", label: "Profile controls" },
@@ -135,20 +139,13 @@ const projects: Project[] = [
     linkLabel: "View repository",
     screenshots: [
       { src: "/projects/blog-home.png", alt: "Developer blog home page", label: "Publication home" },
-      { src: "/projects/blog-articles.png", alt: "Developer blog article archive", label: "Article archive" },
-      { src: "/projects/blog-article.png", alt: "Developer blog article reading view", label: "Reading experience" },
+      { src: "/projects/blog-filter-motion.webp", video: "/projects/blog-filter-motion.mp4", alt: "Filtering the developer blog archive by React", label: "Filter the archive" },
+      { src: "/projects/blog-read-motion.webp", video: "/projects/blog-read-motion.mp4", alt: "Opening a React article from the filtered archive", label: "Open an article" },
       { src: "/projects/blog-about.png", alt: "Developer blog about page", label: "About the publication" },
       { src: "/projects/blog-search.png", alt: "Developer blog search results for WebSocket articles", label: "Search and filters" },
       { src: "/projects/blog-mobile.png", alt: "Developer blog home page on a mobile viewport", label: "Responsive reading", format: "mobile" },
     ],
   },
-];
-
-const capabilities = [
-  ["01", "Product interfaces", "Responsive dashboards, accessible interactions, and performance work that users can feel."],
-  ["02", "Backends & APIs", "Express services, auth, PostgreSQL, Prisma, WebSockets, jobs, and third-party integrations."],
-  ["03", "AI & realtime", "Voice agents, worker orchestration, queues, audio pipelines, evaluations, and live state."],
-  ["04", "Cloud & delivery", "AWS EC2, RDS, S3, PM2, migrations, environment wiring, and repeatable releases."],
 ];
 
 const experience = [
@@ -301,9 +298,21 @@ function SignalName() {
   );
 }
 
-function ProjectSlider({ project }: { project: Project }) {
+function ProjectSlider({ project, open }: { project: Project; open: boolean }) {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
+  const imageDialog = useRef<HTMLDialogElement>(null);
+  const [motionEnabled, setMotionEnabled] = useState(false);
+  const [enlarged, setEnlarged] = useState(false);
+  const hasMotion = project.screenshots.some((shot) => shot.video);
+
+  useEffect(() => {
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setMotionEnabled(!preference.matches);
+    sync();
+    preference.addEventListener("change", sync);
+    return () => preference.removeEventListener("change", sync);
+  }, []);
 
   useEffect(() => {
     if (!api) return;
@@ -365,7 +374,7 @@ function ProjectSlider({ project }: { project: Project }) {
   return (
     <div className="case-slider">
       <div className="case-slider-bar">
-        <span>Screenshots</span>
+        <span>Project gallery</span>
         <span><MoveHorizontal size={12} /> Swipe or drag</span>
         <span><b className="gallery-count" key={current}>{String(current + 1).padStart(2, "0")}</b> / {String(project.screenshots.length).padStart(2, "0")}</span>
       </div>
@@ -384,14 +393,16 @@ function ProjectSlider({ project }: { project: Project }) {
             >
               <figure className="case-slide">
                 <div className={`case-shot case-shot--${screenshot.format ?? "desktop"}`}>
-                  <img
+                  {screenshot.video ? <GalleryMotion src={screenshot.video} poster={screenshot.src} label={screenshot.alt} enabled={open && motionEnabled && !enlarged} /> : <img
                     src={screenshot.src}
                     alt={screenshot.alt}
                     width={screenshot.format === "mobile" ? 390 : 1264}
                     height={screenshot.format === "mobile" ? 844 : 720}
                     loading={index === 0 ? "eager" : "lazy"}
                     draggable={false}
-                  />
+                  />}
+                  {screenshot.video && <span className="case-motion-badge">Motion</span>}
+                  {index === current && <button className="case-image-expand" type="button" aria-label={`Enlarge ${screenshot.label}`} onClick={() => { setEnlarged(true); imageDialog.current?.showModal(); }}><Expand size={16} /></button>}
                 </div>
                 <figcaption>
                   <span>{String(index + 1).padStart(2, "0")}</span>
@@ -421,11 +432,28 @@ function ProjectSlider({ project }: { project: Project }) {
             ))}
           </div>
           <div className="case-slider-actions">
+            {hasMotion && <button type="button" className="gallery-motion-toggle" aria-label={motionEnabled ? "Pause gallery motion" : "Play gallery motion"} aria-pressed={motionEnabled} onClick={() => setMotionEnabled((enabled) => !enabled)}>{motionEnabled ? <Pause size={14} /> : <Play size={14} />}</button>}
             <CarouselPrevious aria-label="Previous screenshot"><ArrowLeft size={14} /><span>Prev</span></CarouselPrevious>
             <CarouselNext aria-label="Next screenshot"><span>Next</span><ArrowRight size={14} /></CarouselNext>
           </div>
         </div>
       </Carousel>
+      <p className="case-caption-detail" key={active.src}>{projectStories[project.id].captions[current]}</p>
+      <dialog className="image-viewer" ref={imageDialog} aria-label={active.label} onClose={() => setEnlarged(false)} onClick={(event) => { if (event.target === event.currentTarget) imageDialog.current?.close(); }}>
+        <div className="image-viewer-head"><p>{active.label}</p><button type="button" className="case-close" aria-label="Close enlarged screenshot" onClick={() => imageDialog.current?.close()}><span aria-hidden="true">×</span></button></div>
+        {active.video ? <GalleryMotion src={active.video} poster={active.src} label={active.alt} enabled={enlarged && motionEnabled} controls /> : <img src={active.src} alt={active.alt} width={active.format === "mobile" ? 390 : 1264} height={active.format === "mobile" ? 844 : 720} />}
+      </dialog>
+    </div>
+  );
+}
+
+function ProjectShowcase({ project, open }: { project: Project; open: boolean }) {
+  const story = projectStories[project.id];
+  return (
+    <div className="project-showcase">
+      <div className="showcase-intro"><h4>{story.title}</h4><p>{story.summary}</p></div>
+      <ProjectSlider project={project} open={open} />
+      <div className="case-engineering"><div><h4>What I built</h4><p>{story.built}</p></div><div><h4>Behind the interface</h4><p>{story.decision}</p></div></div>
     </div>
   );
 }
@@ -474,10 +502,7 @@ function ProjectEntry({ project, index, open, onToggle }: { project: Project; in
         return;
       }
 
-      window.scrollTo({
-        top: target.getBoundingClientRect().top + window.scrollY - scrollMargin,
-        behavior: "auto",
-      });
+      target.scrollIntoView({ block: "start", behavior: "instant" });
       document.documentElement.classList.remove("is-aligning-project");
     };
 
@@ -493,13 +518,19 @@ function ProjectEntry({ project, index, open, onToggle }: { project: Project; in
   }, [open]);
 
   return (
-    <article className={`project-item ${open ? "is-open" : ""}`}>
+    <article className={`project-item ${index === 0 ? "project-item--featured" : ""} ${open ? "is-open" : ""}`}>
       <button ref={trigger} type="button" className="project-trigger" data-surface onClick={onToggle} aria-expanded={open} aria-controls={`${project.id}-detail`}>
         <span className="project-index">{String(index + 1).padStart(2, "0")}</span>
-        <span className="project-title">{project.shortTitle}</span>
-        <span className="project-subtitle">{project.subtitle}</span>
+        <span className="project-thumbnail">
+          <img src={index === 0 ? "/projects/echopass-current-dark.jpg" : project.screenshots[0].src} alt="" width={1264} height={720} loading="lazy" />
+          {index === 0 && <span className="project-cover-label">Featured project</span>}
+        </span>
+        <span className="project-summary">
+          <span className="project-title">{project.shortTitle}</span>
+          <span className="project-subtitle">{project.subtitle}</span>
+          <span className="project-preview-meta">{project.discipline}<span>Explore project</span></span>
+        </span>
         <span className="project-arrow" aria-hidden="true">↗</span>
-        <time>{project.year}</time>
       </button>
       <div className="project-reveal" id={`${project.id}-detail`} inert={!open} aria-hidden={!open}>
         <div className="project-reveal-inner">
@@ -510,14 +541,7 @@ function ProjectEntry({ project, index, open, onToggle }: { project: Project; in
             </button>
           </div>
           <div className="case-meta"><span>{project.discipline}</span><span>{project.year}</span><span>{project.status}</span></div>
-          <ProjectSlider project={project} />
-          <div className="case-copy">
-            <h4>{project.description}</h4>
-            <p>{project.story}</p>
-          </div>
-          <div className="case-facts">
-            {project.highlights.map((highlight, index) => <p key={highlight}><span>0{index + 1}</span>{highlight}</p>)}
-          </div>
+          <ProjectShowcase project={project} open={open} />
           <div className="case-bottom">
             <div className="case-stack">{project.stack.map((item) => <span key={item}>{item}</span>)}</div>
             <a className="motion-link" href={project.link} target="_blank" rel="noreferrer">{project.linkLabel} <ArrowUpRight size={14} /></a>
@@ -533,6 +557,20 @@ export default function Home() {
   const [activeProject, setActiveProject] = useState<number | null>(null);
   const [time, setTime] = useState("");
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [introReady, setIntroReady] = useState(false);
+  const finishLoading = useCallback(() => setIntroReady(true), []);
+
+  useLayoutEffect(() => {
+    const main = root.current;
+    if (introReady || !main) return;
+    const previousOverflow = document.documentElement.style.overflow;
+    main.inert = true;
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      main.inert = false;
+      document.documentElement.style.overflow = previousOverflow;
+    };
+  }, [introReady]);
 
   useSurfaceMotion(root);
 
@@ -559,7 +597,7 @@ export default function Home() {
 
   useEffect(() => {
     const close = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
+      if (event.key !== "Escape" || document.querySelector("dialog[open]")) return;
       root.current?.querySelector<HTMLButtonElement>(".project-item.is-open > .project-trigger")?.focus({ preventScroll: true });
       setActiveProject(null);
     };
@@ -568,6 +606,7 @@ export default function Home() {
   }, []);
 
   useLayoutEffect(() => {
+    if (!introReady) return;
     gsap.registerPlugin(ScrollTrigger);
     const media = gsap.matchMedia();
     let entered = false;
@@ -611,7 +650,7 @@ export default function Home() {
       window.clearTimeout(refreshTimeout);
       media.revert();
     };
-  }, []);
+  }, [introReady]);
 
   const toggleTheme = () => {
     const next = theme === "light" ? "dark" : "light";
@@ -620,8 +659,11 @@ export default function Home() {
   };
 
   return (
-    <main className="shell" id="top" ref={root}>
-      <header className="utility-bar intro-enter">
+    <>
+    {!introReady && <OpeningLoader onComplete={finishLoading} />}
+    <noscript><style>{`.opening-loader { display: none !important; } .is-loading .utility-bar, .is-loading .intro-enter, .is-loading .signal-glyph, .is-loading .signal-axis { visibility: visible; }`}</style></noscript>
+    <main className={`shell${introReady ? "" : " is-loading"}`} id="top" ref={root}>
+      <header className="utility-bar">
         <a href="#top" className="brand-mark" aria-label="Khushpreet Singh — back to top"><strong>KS<span aria-hidden="true">.</span></strong></a>
         <button className="theme-switch" type="button" onClick={toggleTheme} aria-pressed={theme === "dark"} aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}>
           <span className={theme === "light" ? "active" : ""}>Light</span>
@@ -636,12 +678,13 @@ export default function Home() {
           <div className="intro-copy">
             <p id="intro-title">Full-stack software engineer.</p>
             <p>SDE II at <mark>Zyvka</mark></p>
+            <a className="explore-work motion-link" href="#projects">Explore my work <span aria-hidden="true">↓</span></a>
           </div>
           <aside>
             <nav aria-label="Site">
-              <a href="#about" aria-label="About"><span data-label="About">About</span></a>
               <a href="#projects" aria-label="Projects"><span data-label="Projects">Projects</span></a>
               <a href="#experience" aria-label="Experience"><span data-label="Experience">Experience</span></a>
+              <a href="#about" aria-label="About"><span data-label="About">About</span></a>
             </nav>
             <p>Sirsa, Haryana</p>
             <time>{time || "--:--:--"} IST</time>
@@ -653,25 +696,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="about reveal" id="about">
-        <header className="section-head"><h2>About</h2></header>
-        <div className="about-copy">
-          <p>I like the whole thing — the interface people touch, the service behind it, and the infrastructure that keeps it alive.</p>
-          <p>My best work sits between product thinking and systems engineering: clear enough for a person, sturdy enough for production.</p>
-        </div>
-        <div className="capability-list">
-          {capabilities.map(([number, title, copy]) => (
-            <article key={number} data-surface>
-              <span>{number}</span>
-              <strong>{title}</strong>
-              <p>{copy}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
       <section className="projects reveal" id="projects" aria-label="Projects">
-        <header className="section-head"><h2>Selected projects</h2></header>
+        <header className="section-head"><h2>Selected projects</h2><span className="section-note">From interface to infrastructure</span></header>
         <div className="project-list">
           {projects.map((project, index) => (
             <ProjectEntry
@@ -687,30 +713,30 @@ export default function Home() {
 
       <section className="experience reveal" id="experience">
         <header className="section-head"><h2>Experience</h2></header>
-        <div className="experience-list">
+        <div className="experience-company"><h3>Zyvka HR Tech</h3><p>Building and operating AI products across interfaces, services, realtime systems, and AWS infrastructure.</p></div>
+        <div className="experience-list experience-progression">
           {experience.map((item) => (
             <article key={item.date} data-surface>
               <time>{item.date}</time>
-              <div><h3>{item.role}</h3><p>{item.company}</p><span>{item.copy}</span></div>
+              <div><h3>{item.role}</h3></div>
             </article>
           ))}
         </div>
       </section>
 
-      <section className="toolbox reveal">
-        <header className="section-head"><h2>Tech stack</h2></header>
-        <div className="tool-lines">
-          <p data-surface><span>interface</span>Next.js · React · TypeScript · CSS · GSAP</p>
-          <p data-surface><span>server</span>Node.js · Express · Python · WebSockets</p>
-          <p data-surface><span>data</span>PostgreSQL · Prisma · Redis · BullMQ</p>
-          <p data-surface><span>delivery</span>AWS · EC2 · RDS · S3 · PM2 · GitHub Actions</p>
+      <section className="about reveal" id="about">
+        <header className="section-head"><h2>About the way I work</h2></header>
+        <div className="about-copy">
+          <p>I like the whole thing — the interface people touch, the service behind it, and the infrastructure that keeps it alive.</p>
+          <p>My best work sits between product thinking and systems engineering: clear enough for a person, sturdy enough for production.</p>
         </div>
+        <div className="working-stack"><span>Tools I work with</span><p>React · Next.js · TypeScript · Node.js · Python · PostgreSQL · Redis · AWS</p></div>
       </section>
 
       <section className="contact reveal" id="contact" aria-labelledby="contact-title">
         <div className="contact-heading">
           <h2 id="contact-title">Get in touch<span>.</span></h2>
-          <p>Have a project or a role in mind? Send me a message.</p>
+          <p>Have a question or an idea to share? Send me a message.</p>
         </div>
         <ContactForm />
       </section>
@@ -721,5 +747,6 @@ export default function Home() {
       </footer>
 
     </main>
+    </>
   );
 }
