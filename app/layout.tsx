@@ -12,10 +12,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = "https://khushpreet-singh-portfolio.kinfut.chatgpt.site";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: siteUrl ? new URL(siteUrl) : undefined,
   title: "Khushpreet Singh — Full-Stack Software Engineer",
   description:
     "Khushpreet Singh builds full-stack products, AI systems, realtime backends, and dependable AWS infrastructure.",

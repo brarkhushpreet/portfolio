@@ -74,10 +74,10 @@ test("the contact API rejects invalid and cross-site requests before delivery", 
   assert.equal(transport.mock.callCount(), 0);
 });
 
-test("the contact API uses the verified form address and only confirms accepted messages", async (t) => {
+test("the contact API uses its current site address and only confirms accepted messages", async (t) => {
   let providerAccepts = true;
   t.mock.method(globalThis, "fetch", async (_url, options) => {
-    assert.equal(options.headers.Origin, "https://khushpreet-singh-portfolio.kinfut.chatgpt.site");
+    assert.equal(options.headers.Origin, "http://localhost:3000");
     return Response.json({ success: providerAccepts });
   });
   const makeRequest = () => new Request("http://localhost:3000/api/contact", {

@@ -1,6 +1,5 @@
 import { sendContactMessage, validateContactMessage, type ContactMessage } from "../../contact-delivery";
 
-const contactPage = "https://khushpreet-singh-portfolio.kinfut.chatgpt.site/";
 const response = (body: object, status = 200) => Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
 
 export async function POST(request: Request) {
@@ -41,7 +40,7 @@ export async function POST(request: Request) {
   if (validateContactMessage(data) || data.website) return response({ success: false }, 422);
 
   try {
-    // A single verified form address serves local previews and the published site.
+    const contactPage = new URL("/", process.env.NEXT_PUBLIC_SITE_URL || request.url).href;
     await sendContactMessage(data, contactPage, AbortSignal.any([request.signal, AbortSignal.timeout(18000)]));
     return response({ success: true });
   } catch {
