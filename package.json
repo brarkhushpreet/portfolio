@@ -11,7 +11,10 @@
     "start": "cross-env WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "test": "npm run build && node --test tests/*.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "test:ci": "node --test tests/contact-delivery.test.mjs",
+    "deploy": "wrangler deploy --config dist/server/wrangler.json",
+    "deploy:check": "wrangler deploy --config dist/server/wrangler.json --dry-run"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",

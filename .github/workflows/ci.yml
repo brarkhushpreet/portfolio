@@ -1,0 +1,61 @@
+name: Portfolio CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: portfolio-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    env:
+      NEXT_PUBLIC_SITE_URL: https://khushpreet.dev
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - run: npm ci
+      - run: npm run test:ci
+      - run: npm run build
+
+  request-deployment:
+    needs: check
+
+    if: >-
+      github.repository == 'brarkhushpreet/portfolio' &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      vars.AUTO_DEPLOY == 'true'
+
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+
+    steps:
+      - name: Request private deployment
+        env:
+          GH_TOKEN: ${{ secrets.OPS_DISPATCH_TOKEN }}
+          SOURCE_COMMIT: ${{ github.sha }}
+        run: |
+          gh api --method POST \
+            repos/brarkhushpreet/portfolio-ops/actions/workflows/deploy.yml/dispatches \
+            -f ref=main \
+            -f "inputs[commit]=$SOURCE_COMMIT"

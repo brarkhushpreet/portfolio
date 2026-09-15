@@ -1,4 +1,5 @@
-import { sendContactMessage, validateContactMessage, type ContactMessage } from "../../contact-delivery";
+import { env } from "cloudflare:workers";
+import { sendContactMessage, validateContactMessage, type ContactMessage, type ContactEmailBinding } from "../../contact-delivery";
 
 const response = (body: object, status = 200) => Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
 
@@ -40,8 +41,10 @@ export async function POST(request: Request) {
   if (validateContactMessage(data) || data.website) return response({ success: false }, 422);
 
   try {
+    const binding = (env as unknown as { CONTACT_EMAIL?: ContactEmailBinding }).CONTACT_EMAIL;
+    if (!binding || typeof binding.send !== "function") return response({ success: false }, 503);
     const contactPage = new URL("/", process.env.NEXT_PUBLIC_SITE_URL || request.url).href;
-    await sendContactMessage(data, contactPage, AbortSignal.any([request.signal, AbortSignal.timeout(18000)]));
+    await sendContactMessage(data, contactPage, binding);
     return response({ success: true });
   } catch {
     return response({ success: false }, 502);

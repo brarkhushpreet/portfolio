@@ -25,7 +25,7 @@ export function ContactForm() {
       name: String(fields.get("name") ?? ""),
       email: String(fields.get("email") ?? ""),
       message: String(fields.get("message") ?? ""),
-      website: String(fields.get("_honey") ?? ""),
+      website: String(fields.get("website") ?? ""),
     };
     const validationError = validateContactMessage(data);
     if (validationError) {
@@ -62,12 +62,11 @@ export function ContactForm() {
   };
 
   return (
-    <form className="contact-form" action={`https://formsubmit.co/${CONTACT_EMAIL}`} method="POST" onSubmit={submit} aria-label="Contact Khushpreet Singh" aria-busy={status === "sending"}>
-      <input type="hidden" name="_subject" value="New portfolio enquiry" />
-      <input type="hidden" name="_template" value="table" />
+    <form className="contact-form" action="/api/contact" method="POST" onSubmit={submit} aria-label="Contact Khushpreet Singh" aria-busy={status === "sending"}>
+      <noscript><style>{`.contact-form fieldset { display: none; }`}</style><p>Please enable JavaScript to use the form, or <a href={`mailto:${CONTACT_EMAIL}`}>email me directly</a>.</p></noscript>
       <div className="contact-honeypot" aria-hidden="true" inert>
         <label htmlFor="contact-website">Leave this field empty</label>
-        <input id="contact-website" name="_honey" type="text" tabIndex={-1} autoComplete="off" />
+        <input id="contact-website" name="website" type="text" tabIndex={-1} autoComplete="off" />
       </div>
 
       <fieldset disabled={status === "sending"} hidden={status === "sent"}>
