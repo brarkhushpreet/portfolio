@@ -153,19 +153,22 @@ const experience = [
     date: "Jun 2026 — Present",
     role: "Software Development Engineer II",
     company: "Zyvka HR Tech",
-    copy: "Building and operating AI products across interfaces, backend services, realtime systems, and AWS infrastructure.",
+    copy: "Deliver full-stack features from UI to infrastructure, building React and Next.js interfaces, Node.js and TypeScript APIs, realtime workflows, and AWS deployments; maintain them in production.",
+    tech: ["React", "Next.js", "TypeScript", "Node.js", "AWS", "Realtime"],
   },
   {
     date: "May 2025 — May 2026",
     role: "Software Development Engineer I",
     company: "Zyvka HR Tech",
-    copy: "Developed product features, APIs, and realtime workers, with responsibility for deployments and production reliability.",
+    copy: "Built React and Next.js features, integrated REST APIs, and improved rendering and bundle size through profiling and code splitting. Took on selected backend and realtime work alongside AWS deployments.",
+    tech: ["React", "Next.js", "REST APIs", "React Profiler", "Node.js", "AWS"],
   },
   {
     date: "Jul 2024 — Apr 2025",
     role: "Software Development Engineer Intern",
     company: "Zyvka HR Tech",
-    copy: "Contributed to a platform migration, realtime product features, and deployment workflows.",
+    copy: "Modernized legacy React interfaces with shadcn/ui, integrated Stream Chat using Redux and custom hooks, and automated deployments with GitHub Actions on AWS EC2 while working with RDS.",
+    tech: ["React", "shadcn/ui", "Redux", "Stream Chat", "GitHub Actions", "AWS"],
   },
 ];
 
@@ -718,7 +721,13 @@ export default function Home() {
           {experience.map((item) => (
             <article key={item.date} data-surface>
               <time>{item.date}</time>
-              <div><h3>{item.role}</h3></div>
+              <div>
+                <h3>{item.role}</h3>
+                <p className="experience-copy">{item.copy}</p>
+                <ul className="experience-tech" aria-label={`${item.role} technologies`}>
+                  {item.tech.map((tech) => <li key={tech}>{tech}</li>)}
+                </ul>
+              </div>
             </article>
           ))}
         </div>

@@ -427,6 +427,9 @@ aside nav a:hover::after { transform: scaleX(1); transform-origin: left; }
 .experience-list h3 { font-size: 15px; font-weight: 540; }
 .experience-list p { margin-top: 2px; color: var(--blue); font-size: 13px; }
 .experience-list span { margin-top: 8px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+.experience-list .experience-copy { max-width: 72ch; margin-top: 8px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+.experience-tech { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; padding: 0; list-style: none; }
+.experience-tech li { padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); font: 11px/1.4 var(--font-geist-mono), monospace; }
 
 .tool-lines { border-top: 1px solid var(--line); }
 .tool-lines p { display: grid; grid-template-columns: 116px 1fr; gap: 24px; margin: 0; padding: 13px 0; border-bottom: 1px solid var(--line); color: var(--muted); font: 11px/1.5 var(--font-geist-mono), monospace; }
