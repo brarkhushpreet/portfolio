@@ -40,8 +40,9 @@ type Project = {
   story: string;
   highlights: string[];
   stack: string[];
-  link: string;
-  linkLabel: string;
+  liveUrl: string;
+  link?: string;
+  linkLabel?: string;
   screenshots: { src: string; video?: string; alt: string; label: string; format?: "desktop" | "mobile" }[];
 };
 
@@ -60,6 +61,7 @@ const projects: Project[] = [
       "EchoPass turns the room into a temporary credential. Teachers open a short check-in window, students prove presence through a live signal, and the product turns every session into useful classroom and student-level analytics.",
     highlights: ["Rotating acoustic challenges", "Live classroom analytics", "Signed attendance evidence"],
     stack: ["Next.js", "Web Audio", "PostgreSQL", "Prisma", "Redis", "WebSockets"],
+    liveUrl: "https://classpulse.khushpreet.dev",
     link: "https://github.com/brarkhushpreet/AMS",
     linkLabel: "View repository",
     screenshots: [
@@ -85,6 +87,7 @@ const projects: Project[] = [
       "Nexus grew from a messaging experiment into a complete product surface: spaces, conversations, secure membership, resilient history, realtime state, and native WebRTC calls backed by a persistent Node server.",
     highlights: ["Authenticated Socket.IO rooms", "Persistent message history", "Native WebRTC huddles"],
     stack: ["Next.js", "Socket.IO", "WebRTC", "PostgreSQL", "Prisma", "Auth.js"],
+    liveUrl: "https://nexus.khushpreet.dev",
     link: "https://github.com/brarkhushpreet/Chat-Application-nextjs",
     linkLabel: "View repository",
     screenshots: [
@@ -110,8 +113,7 @@ const projects: Project[] = [
       "The experience makes a large catalogue feel immediate through confident visual hierarchy, responsive content rails, useful title context, and profile-aware personalization. TMDB powers live metadata with a curated fallback for dependable demos.",
     highlights: ["Profile-aware discovery", "Live TMDB metadata", "Persistent My List"],
     stack: ["Next.js", "React", "TMDB", "PostgreSQL", "Tailwind CSS"],
-    link: "https://movie-website-gules.vercel.app",
-    linkLabel: "Visit live site",
+    liveUrl: "https://movies.khushpreet.dev",
     screenshots: [
       { src: "/projects/movie-discover-motion.webp", video: "/projects/movie-discover-motion.mp4", alt: "Opening Inception from Vanta’s discovery screen", label: "Discover a title" },
       { src: "/projects/movie-save-motion.webp", video: "/projects/movie-save-motion.mp4", alt: "Saving Inception and opening My List in Vanta", label: "Save to My List" },
@@ -135,6 +137,7 @@ const projects: Project[] = [
       "The product keeps reading ahead of interface chrome. A separate Express API serves structured Markdown articles, while the Next.js frontend handles search, topic filters, responsive typography, dark mode, and article-level metadata.",
     highlights: ["Ten technical deep dives", "Search and topic filters", "Independent content API"],
     stack: ["Next.js", "Express", "MongoDB", "Markdown", "Cloudflare"],
+    liveUrl: "https://blog.khushpreet.dev",
     link: "https://github.com/brarkhushpreet/blog",
     linkLabel: "View repository",
     screenshots: [
@@ -176,6 +179,7 @@ function SignalName() {
   const field = useRef<HTMLDivElement>(null);
   const rail = useRef<HTMLSpanElement>(null);
   const thumb = useRef<HTMLButtonElement>(null);
+  const coordinates = useRef<HTMLSpanElement>(null);
   const dragging = useRef(false);
   const value = useRef(50);
   const animationFrame = useRef<number | null>(null);
@@ -208,6 +212,7 @@ function SignalName() {
 
   const start = (event: PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) return;
+    updateCoordinates(event.clientX, event.clientY);
     dragging.current = true;
     thumb.current?.focus({ preventScroll: true });
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -237,7 +242,15 @@ function SignalName() {
     event.preventDefault();
   };
 
+  const updateCoordinates = (clientX: number, clientY: number) => {
+    if (!field.current || !coordinates.current) return;
+    const bounds = field.current.getBoundingClientRect();
+    const axis = (position: number, start: number, size: number) => String(Math.round(Math.max(0, Math.min(100, ((position - start) / size) * 100)))).padStart(3, "0");
+    coordinates.current.textContent = `X ${axis(clientX, bounds.left, bounds.width)}  Y ${axis(clientY, bounds.top, bounds.height)}`;
+  };
+
   const moveSpotlight = (event: PointerEvent<HTMLDivElement>) => {
+    updateCoordinates(event.clientX, event.clientY);
     if (event.pointerType !== "mouse" || reducedMotion.current || (event.target as HTMLElement).closest(".signal-field")) return;
     const { clientX, clientY } = event;
     if (spotlightFrame.current !== null) window.cancelAnimationFrame(spotlightFrame.current);
@@ -295,7 +308,7 @@ function SignalName() {
           {Array.from({ length: 21 }).map((_, index) => <i key={index} />)}
           <button ref={thumb} className="signal-thumb" type="button" role="slider" aria-label="Adjust letter tilt" aria-describedby="signal-hint" aria-valuemin={0} aria-valuemax={100} aria-valuenow={50} onKeyDown={keyboardMove} />
         </span>
-        <small id="signal-hint">Drag to tilt</small>
+        <small id="signal-hint">Drag to tilt<span ref={coordinates} className="signal-coordinates" aria-hidden="true">X 050  Y 050</span></small>
       </div>
     </div>
   );
@@ -547,7 +560,10 @@ function ProjectEntry({ project, index, open, onToggle }: { project: Project; in
           <ProjectShowcase project={project} open={open} />
           <div className="case-bottom">
             <div className="case-stack">{project.stack.map((item) => <span key={item}>{item}</span>)}</div>
-            <a className="motion-link" href={project.link} target="_blank" rel="noreferrer">{project.linkLabel} <ArrowUpRight size={14} /></a>
+            <div className="case-links">
+              <a className="motion-link" href={project.liveUrl} target="_blank" rel="noreferrer">Visit live site <ArrowUpRight size={14} /></a>
+              {project.link && <a className="motion-link" href={project.link} target="_blank" rel="noreferrer">{project.linkLabel} <ArrowUpRight size={14} /></a>}
+            </div>
           </div>
         </div>
       </div>
