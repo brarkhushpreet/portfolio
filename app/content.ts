@@ -58,7 +58,7 @@ export const projects: Project[] = [
     lead: 0,
     reel: 4,
     shots: [
-      { src: "/projects/echopass-current-dark.jpg", light: "/projects/echopass-current-light.jpg", alt: "EchoPass teacher overview with classroom, student, session, and attendance totals", label: "Teacher overview", caption: "The teacher overview. This capture follows the page theme: switch it and the screenshot switches too." },
+      { src: "/projects/echopass-current-dark.jpg", light: "/projects/echopass-current-light.jpg", alt: "EchoPass teacher overview with classroom, student, session, and attendance totals", label: "Teacher overview", caption: "Classrooms, students, sessions, and attendance at a glance. This capture follows the page theme: switch it and the screenshot switches too." },
       { src: "/projects/echopass-theme-motion.webp", video: "/projects/echopass-theme-motion.mp4", alt: "Switching the EchoPass teacher workspace from light to dark mode", label: "Light → dark", caption: "One workspace, two themes. A real light-to-dark switch keeps the dashboard in context." },
       { src: "/projects/echopass-classrooms-dark.jpg", alt: "EchoPass classroom directory and attendance summaries in dark mode", label: "Classroom directory", caption: "The classroom directory brings rosters, session counts, and attendance summaries into a single view." },
       { src: "/projects/echopass-filter-motion.webp", video: "/projects/echopass-filter-motion.mp4", alt: "Filtering EchoPass attendance by verification method", label: "Filter attendance", caption: "A real interaction in the attendance archive: narrow sessions by verification method." },
@@ -87,7 +87,7 @@ export const projects: Project[] = [
     lead: 0,
     reel: 3,
     shots: [
-      { src: "/projects/chat-current-dark.jpg", light: "/projects/chat-current-light.jpg", alt: "Nexus conversation workspace with spaces, rooms, direct messages, and a shared room thread", label: "Conversation view", caption: "The conversation workspace. This capture follows the page theme: switch it and the screenshot switches too." },
+      { src: "/projects/chat-current-dark.jpg", light: "/projects/chat-current-light.jpg", alt: "Nexus conversation workspace with spaces, rooms, direct messages, and a shared room thread", label: "Conversation view", caption: "Spaces, rooms, and direct messages around a shared thread. This capture follows the page theme: switch it and the screenshot switches too." },
       { src: "/projects/chat-theme-motion.webp", video: "/projects/chat-theme-motion.mp4", alt: "Switching the Nexus conversation workspace from light to dark mode", label: "Light → dark", caption: "Switch from light to dark without leaving the conversation, recorded in the real demo workspace." },
       { src: "/projects/chat-people-dark.jpg", alt: "Nexus people directory in dark mode with fictional demo members", label: "People directory", caption: "A dedicated people directory keeps workspace membership easy to review." },
       { src: "/projects/chat-compose-motion.webp", video: "/projects/chat-compose-motion.mp4", alt: "Composing a draft in the updated Nexus light workspace", label: "Compose in context", caption: "A short recording of drafting a message in the real composer. No message is sent." },
