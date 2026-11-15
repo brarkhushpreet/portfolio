@@ -1,6 +1,18 @@
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
+import { register } from "node:module";
 import test from "node:test";
+
+// The built worker imports its bindings from `cloudflare:workers`, which only
+// exists inside workerd. Resolve it to an empty environment so the same bundle
+// can be rendered under Node.
+register(`data:text/javascript,${encodeURIComponent(`
+export async function resolve(specifier, context, next) {
+  if (specifier === "cloudflare:workers") {
+    return { url: "data:text/javascript,export const env = {};", shortCircuit: true };
+  }
+  return next(specifier, context);
+}`)}`);
 
 async function render(path = "/", options = {}) {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
@@ -56,43 +68,69 @@ test("the built contact route validates submissions before email delivery", asyn
   assert.deepEqual(await response.json(), { success: false });
 });
 
-test("ships the portfolio assets and animation system", async () => {
-  const [page, layout, packageJson] = await Promise.all([
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../package.json", import.meta.url), "utf8"),
-    access(new URL("../public/Khushpreet_Singh_Resume.pdf", import.meta.url)),
-    access(new URL("../public/og.png", import.meta.url)),
-    access(new URL("../public/projects/echopass-dashboard.png", import.meta.url)),
-    access(new URL("../public/projects/echopass-mobile.png", import.meta.url)),
-    access(new URL("../public/projects/chat-workspace.png", import.meta.url)),
-    access(new URL("../public/projects/chat-mobile.png", import.meta.url)),
-    access(new URL("../public/projects/movie-browse.png", import.meta.url)),
-    access(new URL("../public/projects/movie-mobile.png", import.meta.url)),
-    access(new URL("../public/projects/blog-home.png", import.meta.url)),
-    access(new URL("../public/projects/blog-mobile.png", import.meta.url)),
-  ]);
-
-  assert.match(page, /from "gsap"/);
-  assert.match(page, /ScrollTrigger/);
-  assert.match(page, /prefers-reduced-motion/);
-  assert.match(page, /portfolio-theme/);
-  assert.match(page, /ProjectEntry/);
-  assert.match(page, /ProjectSlider/);
-  assert.match(page, /@\/components\/ui\/carousel/);
-  assert.match(page, /addEventListener\("wheel"/);
-  assert.match(page, /useState<number \| null>\(null\)/);
-  assert.match(page, /align: "center"/);
-  assert.match(page, /is-aligning-project/);
-  assert.match(page, /aria-label={`Close \$\{project\.shortTitle\} project`}/);
-  assert.doesNotMatch(page, />close <span>/);
-  assert.match(page, /Responsive dashboard/);
-  assert.match(page, /Responsive workspace/);
-  assert.match(page, /Responsive discovery/);
-  assert.match(page, /Responsive reading/);
-  assert.match(page, /SignalName/);
-  assert.match(page, /theme-switch/);
-  assert.match(layout, /og\.png/);
-  assert.match(packageJson, /"gsap"/);
-  assert.doesNotMatch(packageJson, /react-loading-skeleton/);
+test("server HTML carries the content without client-side rendering", async () => {
+  const html = await (await render()).text();
+  // The theme is decided before first paint; dark is the default.
+  assert.match(html, /<html[^>]*data-theme="dark"/);
+  assert.match(html, /portfolio-theme/);
+  // Every section and project is addressable.
+  for (const id of ["about", "work", "experience", "contact", "project-echopass", "project-chat", "project-movies", "project-blog"]) {
+    assert.match(html, new RegExp(`id="${id}"`), `missing #${id}`);
+  }
+  assert.match(html, /Selected work/);
+  assert.match(html, /Get in touch\./);
+  assert.match(html, /Responsive dashboard/);
+  assert.match(html, /Responsive workspace/);
+  assert.match(html, /Responsive discovery/);
+  assert.match(html, /Responsive reading/);
 });
+
+test("screenshots captured in both themes ship both variants", async () => {
+  const html = await (await render()).text();
+  const { projects } = await readContent();
+  const paired = projects.flatMap((project) => project.shots).filter((shot) => shot.light);
+  assert.ok(paired.length >= 4, "expected light and dark pairs for EchoPass and Nexus");
+  for (const shot of paired) {
+    assert.ok(html.includes(`class="only-dark" src="${shot.src}"`), `dark variant missing for ${shot.src}`);
+    assert.ok(html.includes(`class="only-light" src="${shot.light}"`), `light variant missing for ${shot.light}`);
+  }
+});
+
+test("every referenced asset exists", async () => {
+  const { projects, links } = await readContent();
+  const files = new Set([links.resume, "/og.png", "/favicon.svg", "/fonts/geist-latin.woff2", "/fonts/geist-mono-latin.woff2"]);
+  for (const project of projects) {
+    assert.ok(project.shots[project.lead], `${project.id}: lead shot`);
+    assert.ok(project.shots[project.reel]?.video, `${project.id}: reel shot must be a recording`);
+    for (const shot of project.shots) {
+      files.add(shot.src);
+      if (shot.light) files.add(shot.light);
+      if (shot.video) files.add(shot.video);
+    }
+  }
+  await Promise.all([...files].map((file) => access(new URL(`../public${file}`, import.meta.url))));
+});
+
+test("motion respects user preferences", async () => {
+  const [motion, clip, css, packageJson] = await Promise.all([
+    readFile(new URL("../app/components/motion.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/clip.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    readFile(new URL("../package.json", import.meta.url), "utf8"),
+  ]);
+  assert.match(motion, /prefers-reduced-motion: reduce/);
+  assert.match(motion, /prefers-reduced-motion: no-preference/);
+  assert.match(clip, /useReducedMotion/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
+  assert.match(css, /\[data-theme="light"\]/);
+  assert.match(packageJson, /"gsap"/);
+  assert.match(packageJson, /"lenis"/);
+});
+
+/** Loads the typed content module by stripping its type-only syntax. */
+async function readContent() {
+  const source = await readFile(new URL("../app/content.ts", import.meta.url), "utf8");
+  const { stripTypeScriptTypes } = await import("node:module");
+  const url = `data:text/javascript;base64,${Buffer.from(stripTypeScriptTypes(source)).toString("base64")}`;
+  return import(url);
+}

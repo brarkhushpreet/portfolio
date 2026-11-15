@@ -1,16 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import "lenis/dist/lenis.css";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
@@ -48,11 +38,23 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * Runs before first paint: marks the document as scripted, restores a saved
+ * theme (dark is the default), and guarantees the opening curtain lifts even
+ * if the app bundle never arrives.
+ */
+const bootScript = `(function(){var d=document.documentElement;d.classList.add("js");try{var t=localStorage.getItem("portfolio-theme");if(t==="light"||t==="dark"){d.dataset.theme=t;var m=document.querySelector('meta[name="theme-color"]');if(m&&t==="light")m.setAttribute("content","#edece8")}}catch(e){}setTimeout(function(){d.classList.add("is-ready")},3500)})()`;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head><link rel="icon" href="/favicon.svg" type="image/svg+xml" /></head>
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>{children}</body>
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
+      <head>
+        <meta name="theme-color" content="#0c0d0f" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="preload" href="/fonts/geist-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <script dangerouslySetInnerHTML={{ __html: bootScript }} />
+      </head>
+      <body>{children}</body>
     </html>
   );
 }

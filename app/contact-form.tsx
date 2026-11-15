@@ -70,30 +70,35 @@ export function ContactForm() {
       </div>
 
       <fieldset disabled={status === "sending"} hidden={status === "sent"}>
-        <div className="contact-fields">
-          <div className="contact-field">
-            <label htmlFor="contact-name">Name</label>
-            <input ref={nameInput} id="contact-name" name="name" type="text" placeholder="Your name" autoComplete="name" required maxLength={80} />
-          </div>
-          <div className="contact-field">
-            <label htmlFor="contact-email">Email</label>
-            <input id="contact-email" name="email" type="email" placeholder="you@example.com" autoComplete="email" required maxLength={254} />
-          </div>
-          <div className="contact-field contact-field-message">
-            <label htmlFor="contact-message">Message</label>
-            <textarea id="contact-message" name="message" placeholder="Tell me a little about what you have in mind…" rows={5} required minLength={10} maxLength={4000} />
-          </div>
+        <div className="field">
+          <label className="mono" htmlFor="contact-name">Name</label>
+          <input ref={nameInput} id="contact-name" name="name" type="text" placeholder="Your name" autoComplete="name" required maxLength={80} />
+        </div>
+        <div className="field">
+          <label className="mono" htmlFor="contact-email">Email</label>
+          <input id="contact-email" name="email" type="email" placeholder="you@example.com" autoComplete="email" required maxLength={254} />
+        </div>
+        <div className="field">
+          <label className="mono" htmlFor="contact-message">Message</label>
+          <textarea id="contact-message" name="message" placeholder="Tell me a little about what you have in mind…" rows={4} required minLength={10} maxLength={4000} />
         </div>
         <div className="contact-actions">
           <p>Or email me at <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
-          <button className="contact-submit" type="submit" data-magnetic disabled={status === "sending"}>
-            <span className="magnetic-content">{status === "sending" ? <>Sending<LoaderCircle className="send-spinner" size={17} /></> : <>Send message<ArrowUpRight size={18} /></>}</span>
+          <button className="pill pill--accent" type="submit" disabled={status === "sending"}>
+            {status === "sending" ? <>Sending <LoaderCircle className="spin" size={17} aria-hidden="true" /></> : <>Send message <ArrowUpRight size={17} aria-hidden="true" /></>}
           </button>
         </div>
       </fieldset>
 
-      <div ref={feedback} className={`contact-feedback ${status === "sent" ? "is-success" : ""}`} role="status" tabIndex={-1}>
-        {status === "sent" && <><span className="contact-success-icon"><Check size={23} /></span><h3>Thank you for reaching out.</h3><p>Your message has been submitted.</p><button type="button" className="motion-link" onClick={() => { setStatus("idle"); window.requestAnimationFrame(() => nameInput.current?.focus()); }}>Send another message <ArrowUpRight size={14} /></button></>}
+      <div ref={feedback} className={`contact-feedback${status === "sent" ? " is-success" : ""}`} role="status" tabIndex={-1}>
+        {status === "sent" && (
+          <>
+            <span className="contact-success-icon"><Check size={22} aria-hidden="true" /></span>
+            <h3>Thank you for reaching out.</h3>
+            <p>Your message has been submitted.</p>
+            <button type="button" className="pill" onClick={() => { setStatus("idle"); window.requestAnimationFrame(() => nameInput.current?.focus()); }}>Send another message <ArrowUpRight size={16} aria-hidden="true" /></button>
+          </>
+        )}
         {status === "error" && <p className="contact-error">{error} <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>}
       </div>
     </form>
