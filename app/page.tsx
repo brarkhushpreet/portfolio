@@ -1,27 +1,14 @@
 import { ArrowDown, ArrowUpRight, Download } from "lucide-react";
 import { Fragment } from "react";
 import { ContactForm } from "./contact-form";
-import { experience, links, projects, tools } from "./content";
+import { experience, links, tools } from "./content";
 import { HeroName } from "./components/hero-name";
+import { HeroStack } from "./components/hero-stack";
 import { LocalTime } from "./components/local-time";
 import { Motion } from "./components/motion";
-import { Reel, type ReelItem } from "./components/reel";
 import { SiteHeader } from "./components/site-header";
 import { Words } from "./components/words";
 import { Work } from "./components/work";
-
-const reel: ReelItem[] = projects.map((project) => {
-  const shot = project.shots[project.reel];
-  return {
-    id: project.id,
-    title: project.shortTitle,
-    subtitle: project.subtitle,
-    label: shot.label,
-    src: shot.video ?? "",
-    poster: shot.src,
-    alt: shot.alt,
-  };
-});
 
 export default function Home() {
   const year = new Date().getFullYear();
@@ -44,18 +31,20 @@ export default function Home() {
             <LocalTime />
           </div>
           <HeroName />
-          <div className="hero-row">
-            <p className="hero-lead" data-intro>
-              <strong>Full-stack software engineer.</strong> I build AI products, realtime systems, and cloud infrastructure.
-            </p>
-            <div className="hero-actions" data-intro>
-              <a className="pill pill--solid" href="#work">Selected work <ArrowDown size={16} aria-hidden="true" /></a>
-              <a className="pill" href={links.github} target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={16} aria-hidden="true" /></a>
-              <a className="pill" href={links.resume} download>Résumé <Download size={15} aria-hidden="true" /></a>
+          <div className="hero-lower">
+            <div className="hero-copy">
+              <p className="hero-lead" data-intro>
+                <strong>Full-stack software engineer.</strong> I build AI products, realtime systems, and cloud infrastructure.
+              </p>
+              <div className="hero-actions" data-intro>
+                <a className="pill pill--solid" href="#work">Selected work <ArrowDown size={16} aria-hidden="true" /></a>
+                <a className="pill" href={links.github} target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={16} aria-hidden="true" /></a>
+                <a className="pill" href={links.resume} download>Résumé <Download size={15} aria-hidden="true" /></a>
+              </div>
             </div>
-          </div>
-          <div data-intro>
-            <Reel items={reel} />
+            <div className="hero-scene" data-intro>
+              <HeroStack video="/projects/echopass-method-motion.mp4" poster="/projects/echopass-method-motion.webp" />
+            </div>
           </div>
         </section>
 

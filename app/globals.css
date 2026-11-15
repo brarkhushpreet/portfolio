@@ -297,7 +297,7 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
 
 /* ---------- Hero ---------- */
 
-.hero { padding-top: clamp(108px, 16vh, 176px); }
+.hero { display: flex; flex-direction: column; min-height: 100svh; padding-top: clamp(96px, 13.5vh, 168px); padding-bottom: clamp(18px, 2.6vh, 34px); }
 
 .hero-meta { display: grid; grid-template-columns: 1fr auto 1fr; gap: var(--gap); color: var(--muted); }
 .hero-meta > :first-child { color: var(--fg); }
@@ -315,15 +315,16 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
 .name-word { display: inline-block; overflow: hidden; padding: 0.1em 0.07em 0.24em 0.02em; margin: -0.1em -0.07em -0.24em -0.02em; }
 .name-char { display: inline-block; text-align: center; will-change: transform; }
 
-.hero-row {
+.hero-lower {
+  flex: 1;
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: var(--gap);
-  align-items: end;
-  margin-top: clamp(28px, 3.2vw, 56px);
+  min-height: 0;
+  margin-top: clamp(12px, 1.6vw, 28px);
 }
+.hero-copy { grid-column: 1 / span 5; align-self: end; display: grid; gap: clamp(20px, 2.4vw, 36px); padding-bottom: 6px; }
 .hero-lead {
-  grid-column: 1 / span 6;
   color: var(--muted);
   font-size: clamp(20px, 2.05vw, 34px);
   line-height: 1.16;
@@ -331,7 +332,159 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   text-wrap: balance;
 }
 .hero-lead strong { color: var(--fg); font-weight: 500; }
-.hero-actions { grid-column: 8 / -1; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.hero-scene { grid-column: 6 / -1; position: relative; min-height: clamp(300px, 42vh, 680px); container-type: size; }
+
+/* ---------- Hero scene: one product, pulled apart ---------- */
+
+.scene { position: absolute; inset: 0; }
+.stage {
+  /* Plane width, solved from the room available: once the three layers are
+     spread, the tilted stack is about 1.2w wide and 0.96w tall. The rest of
+     the width is for the labels, the rest of the height for the caption. */
+  --w: clamp(200px, min((100cqw - 150px) / 1.2, (100cqh - 48px) / 0.96), 780px);
+  --g0: calc(var(--w) * 0.2);
+  position: absolute;
+  inset: 0;
+  perspective: 1800px;
+  perspective-origin: 45% 40%;
+}
+.stage-space {
+  --rx: 57deg;
+  --rz: -35deg;
+  --spread: 1;
+  position: absolute;
+  left: calc((100% - 140px) / 2);
+  top: calc(50% - 22px + var(--w) * 0.12);
+  width: var(--w);
+  aspect-ratio: 2 / 1;
+  margin: calc(var(--w) * -0.25) 0 0 calc(var(--w) * -0.5);
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx)) rotateZ(var(--rz));
+}
+
+.layer {
+  --ink: var(--line-strong);
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: translateZ(calc(var(--i) * var(--g0) * var(--spread)));
+}
+.layer.is-dim { --ink: var(--line); }
+.layer-body {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border: 1px solid var(--ink);
+  border-radius: calc(var(--w) * 0.022);
+  transition: transform 0.7s var(--ease), border-color 0.5s var(--ease), box-shadow 0.7s var(--ease);
+}
+.layer.is-active .layer-body { transform: translateZ(calc(var(--g0) * 0.3)); border-color: var(--fg); }
+.layer-body svg { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: var(--ink); stroke-width: 1; transition: stroke 0.5s var(--ease); }
+.layer-body svg * { vector-effect: non-scaling-stroke; }
+.layer.is-active .layer-body svg { stroke: var(--fg); }
+
+.layer--interface .layer-body {
+  border-color: var(--line-strong);
+  background: var(--bg-raised) top center / cover no-repeat;
+  box-shadow: 0 calc(var(--w) * 0.05) calc(var(--w) * 0.22) calc(var(--w) * -0.04) color-mix(in srgb, var(--accent) 34%, transparent);
+}
+.layer--interface video { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+.layer--interface .layer-body::after { content: ""; position: absolute; inset: 0; background: var(--bg); opacity: 0; transition: opacity 0.5s var(--ease); }
+.layer--interface.is-dim .layer-body::after { opacity: 0.55; }
+
+.layer--service .layer-body { background: color-mix(in srgb, var(--fg) 5.5%, transparent); }
+.layer--service .grid { opacity: 0.45; }
+.layer--service .route { stroke: var(--accent); stroke-dasharray: 5 7; animation: route 1.4s linear infinite; }
+.layer--service rect { fill: var(--bg); }
+@keyframes route { to { stroke-dashoffset: -24; } }
+
+.layer--infrastructure .layer-body {
+  border-style: dashed;
+  background:
+    radial-gradient(circle, var(--ink) 1px, transparent 1.5px) 0 0 / calc(var(--w) * 0.05) calc(var(--w) * 0.05),
+    color-mix(in srgb, var(--fg) 2.5%, transparent);
+}
+.layer--infrastructure rect, .layer--infrastructure circle { fill: var(--bg); }
+.ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 70%;
+  aspect-ratio: 1;
+  margin: -35% 0 0 -35%;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  animation: ring 4.2s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+.ring:nth-child(2) { animation-delay: -1.4s; }
+.ring:nth-child(3) { animation-delay: -2.8s; }
+@keyframes ring { from { transform: scale(0.06); opacity: 0.9; } to { transform: scale(1); opacity: 0; } }
+
+/* Labels sit on a corner of their layer but turn back to face the camera. */
+.layer-tag {
+  position: absolute;
+  left: 100%;
+  top: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  color: var(--muted);
+  white-space: nowrap;
+  transform-origin: 0 0;
+  transform: rotateZ(calc(var(--rz) * -1)) rotateX(calc(var(--rx) * -1)) translate(12px, -50%);
+  transition: color 0.4s var(--ease);
+}
+.layer-tag i { width: clamp(18px, 2.6cqw, 40px); height: 1px; background: currentColor; }
+.layer.is-active .layer-tag { color: var(--fg); }
+.layer.is-active .layer-tag i { background: var(--accent); }
+
+.wire {
+  position: absolute;
+  width: 1px;
+  height: calc(var(--g0) * var(--spread) * 2);
+  background: repeating-linear-gradient(to bottom, var(--line-strong) 0 3px, transparent 3px 8px);
+  transform-origin: top;
+  transform: rotateX(90deg);
+}
+.packet {
+  position: absolute;
+  width: calc(var(--w) * 0.014);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: packet 3.6s linear infinite;
+}
+@keyframes packet {
+  from { transform: translateZ(0); }
+  to { transform: translateZ(calc(var(--g0) * var(--spread) * 2)); }
+}
+.is-paused .packet, .is-paused .ring, .is-paused .route { animation-play-state: paused; }
+
+.scene-caption { position: absolute; left: 0; bottom: 0; color: var(--muted); }
+.scene-caption span { color: var(--fg); }
+.scene-caption .for-touch { display: none; color: inherit; }
+.scene-caption .for-mouse { color: inherit; }
+@media (hover: none) {
+  .scene-caption .for-touch { display: inline; }
+  .scene-caption .for-mouse { display: none; }
+}
+.scene-toggle {
+  position: absolute;
+  right: 0;
+  bottom: -6px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--muted);
+  transition: color 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+.scene-toggle:hover { color: var(--fg); border-color: var(--fg); }
 
 /* ---------- Media frames ---------- */
 
@@ -391,47 +544,6 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
 .frame:hover .clip-toggle, .clip-toggle:focus-visible { opacity: 1; }
 .clip-toggle:hover { background: var(--accent); color: var(--accent-fg); }
 @media (hover: none) { .clip-toggle, .frame-open span { opacity: 1; transform: none; } }
-
-/* ---------- Reel ---------- */
-
-.reel {
-  --reel-progress: 0;
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: var(--gap);
-  align-items: start;
-  margin-top: clamp(44px, 5.6vw, 96px);
-}
-.reel-list { grid-column: 1 / span 4; }
-.reel-stage { grid-column: 5 / -1; }
-.reel-label { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; color: var(--muted); }
-.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 2.4s ease-in-out infinite; }
-@keyframes pulse { 50% { opacity: 0.25; } }
-
-.reel-list button {
-  position: relative;
-  display: grid;
-  grid-template-columns: 34px 1fr;
-  align-items: baseline;
-  row-gap: 2px;
-  width: 100%;
-  padding: 15px 0 16px;
-  border-top: 1px solid var(--line);
-  color: var(--muted);
-  text-align: left;
-  transition: color 0.4s var(--ease), padding-left 0.5s var(--ease);
-}
-.reel-list button:hover, .reel-list button.is-current { color: var(--fg); }
-.reel-list button.is-current { padding-left: 10px; }
-.reel-title { font-size: clamp(19px, 1.75vw, 28px); line-height: 1.1; letter-spacing: -0.035em; }
-.reel-sub { grid-column: 2; font-size: 13.5px; color: var(--muted); }
-.reel-list button i { position: absolute; inset: -1px 0 auto 0; height: 1px; background: var(--fg); transform: scaleX(0); transform-origin: left; }
-.reel-list button.is-current i { transform: scaleX(var(--reel-progress)); }
-.reel-list li:last-child button { border-bottom: 1px solid var(--line); }
-
-.reel-stage figcaption { display: flex; justify-content: space-between; gap: var(--gap); padding-top: 12px; color: var(--muted); }
-.reel-stage figcaption a { color: var(--fg); }
-.reel-stage figcaption a:hover { color: var(--accent); }
 
 /* ---------- Sections ---------- */
 
@@ -697,15 +809,11 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
 /* ---------- Responsive ---------- */
 
 @media (max-width: 1020px) {
-  .hero-lead { grid-column: 1 / -1; }
-  .hero-actions { grid-column: 1 / -1; justify-content: flex-start; }
-  .reel-list, .reel-stage { grid-column: 1 / -1; }
-  .reel-stage { order: -1; }
-  .reel-list ol { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 var(--gap); }
-  .reel-list li:last-child button { border-bottom: 0; }
-  .reel-list button { grid-template-columns: 1fr; }
-  .reel-sub { grid-column: 1; }
-  .reel-label { display: none; }
+  .hero-copy, .hero-scene { grid-column: 1 / -1; }
+  /* A definite height: container units read 0 from a height that only comes from min-height. */
+  .hero-scene { height: clamp(300px, 56vw, 520px); min-height: 0; }
+  .stage { --w: clamp(180px, min((100cqw - 124px) / 1.2, (100cqh - 48px) / 0.96), 780px); }
+  .stage-space { left: calc((100% - 116px) / 2); }
 
   .work-index { display: none; }
   .work-list { grid-column: 1 / -1; }
@@ -730,11 +838,12 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   .name-line { white-space: normal; }
   .name-word { display: block; width: max-content; }
   .hero-actions .pill { flex: 1 1 auto; }
+  .hero-scene { height: 92vw; margin-top: 8px; }
+  .stage { --w: clamp(180px, min(100cqw / 1.2, (100cqh - 56px) / 0.96), 780px); }
+  .stage-space { left: 50%; }
+  .layer-tag { display: none; }
+  .scene-caption { max-width: calc(100% - 44px); }
 
-  .reel-list ol { grid-template-columns: 1fr 1fr; }
-  .reel-sub { display: none; }
-  .reel-list button { padding: 12px 0; }
-  .reel-stage figcaption > :nth-child(2) { display: none; }
 
   .about-row, .contact-row { grid-template-columns: 1fr; gap: 40px; }
   .about-note, .toolkit, .contact-note, .contact-row > div { grid-column: 1 / -1; }

@@ -27,8 +27,6 @@ export type Project = {
   repoUrl?: string;
   /** Index of the shot that leads the project panel. */
   lead: number;
-  /** Index of the shot that plays in the hero reel. */
-  reel: number;
   shots: Shot[];
 };
 
@@ -56,7 +54,6 @@ export const projects: Project[] = [
     liveUrl: "https://classpulse.khushpreet.dev",
     repoUrl: "https://github.com/brarkhushpreet/AMS",
     lead: 0,
-    reel: 4,
     shots: [
       { src: "/projects/echopass-current-dark.jpg", light: "/projects/echopass-current-light.jpg", alt: "EchoPass teacher overview with classroom, student, session, and attendance totals", label: "Teacher overview", caption: "Classrooms, students, sessions, and attendance at a glance. This capture follows the page theme: switch it and the screenshot switches too." },
       { src: "/projects/echopass-theme-motion.webp", video: "/projects/echopass-theme-motion.mp4", alt: "Switching the EchoPass teacher workspace from light to dark mode", label: "Light → dark", caption: "One workspace, two themes. A real light-to-dark switch keeps the dashboard in context." },
@@ -85,7 +82,6 @@ export const projects: Project[] = [
     liveUrl: "https://nexus.khushpreet.dev",
     repoUrl: "https://github.com/brarkhushpreet/Chat-Application-nextjs",
     lead: 0,
-    reel: 3,
     shots: [
       { src: "/projects/chat-current-dark.jpg", light: "/projects/chat-current-light.jpg", alt: "Nexus conversation workspace with spaces, rooms, direct messages, and a shared room thread", label: "Conversation view", caption: "Spaces, rooms, and direct messages around a shared thread. This capture follows the page theme: switch it and the screenshot switches too." },
       { src: "/projects/chat-theme-motion.webp", video: "/projects/chat-theme-motion.mp4", alt: "Switching the Nexus conversation workspace from light to dark mode", label: "Light → dark", caption: "Switch from light to dark without leaving the conversation, recorded in the real demo workspace." },
@@ -113,7 +109,6 @@ export const projects: Project[] = [
     stack: ["Next.js", "React", "TMDB", "PostgreSQL", "Tailwind CSS"],
     liveUrl: "https://movies.khushpreet.dev",
     lead: 0,
-    reel: 1,
     shots: [
       { src: "/projects/movie-discover-motion.webp", video: "/projects/movie-discover-motion.mp4", alt: "Opening Inception from Vanta’s discovery screen", label: "Discover a title", caption: "A cinematic lead and content rails give the catalogue a clear starting point." },
       { src: "/projects/movie-save-motion.webp", video: "/projects/movie-save-motion.mp4", alt: "Saving Inception and opening My List in Vanta", label: "Save to My List", caption: "Save a title from its detail view and find it again in My List." },
@@ -141,7 +136,6 @@ export const projects: Project[] = [
     liveUrl: "https://blog.khushpreet.dev",
     repoUrl: "https://github.com/brarkhushpreet/blog",
     lead: 2,
-    reel: 1,
     shots: [
       { src: "/projects/blog-home.png", alt: "Developer blog home page", label: "Publication home", caption: "The publication home introduces the latest writing with a clear reading hierarchy." },
       { src: "/projects/blog-filter-motion.webp", video: "/projects/blog-filter-motion.mp4", alt: "Filtering the developer blog archive by React", label: "Filter the archive", caption: "Topic filters make the technical archive easier to browse." },
