@@ -80,7 +80,7 @@ export function ContactForm() {
         </div>
         <div className="field">
           <label className="mono" htmlFor="contact-message">Message</label>
-          <textarea id="contact-message" name="message" placeholder="Tell me a little about what you have in mind…" rows={4} required minLength={10} maxLength={4000} />
+          <textarea id="contact-message" name="message" placeholder="Tell me a little about what you have in mind…" rows={3} required minLength={10} maxLength={4000} />
         </div>
         <div className="contact-actions">
           <p>Or email me at <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>

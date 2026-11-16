@@ -3,10 +3,13 @@
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
+import Snap from "lenis/snap";
 import { useEffect } from "react";
 
 /** Shortest time the opening curtain stays down, measured from navigation start. */
 const CURTAIN_MS = 850;
+/** Where a scroll that comes to rest nearby settles: each project, Experience and Contact. */
+const SNAP_TARGETS = ".project, #experience, #contact";
 
 /**
  * The page's motion layer. Markup opts in through data attributes, so every
@@ -37,6 +40,23 @@ export function Motion() {
       const tick = (time: number) => lenis.raf(time * 1000);
       gsap.ticker.add(tick);
       gsap.ticker.lagSmoothing(0);
+
+      // Gentle snapping, only with a mouse or trackpad: a scroll that stops close to a section
+      // start glides onto it, resting where its anchor link would (under the fixed header).
+      const snap = window.matchMedia("(hover: hover) and (pointer: fine)").matches
+        ? new Snap(lenis, { type: "proximity", distanceThreshold: "28%", debounce: 260, duration: 0.85, easing: (t) => 1 - Math.pow(1 - t, 4) })
+        : null;
+      let snaps: Array<() => void> = [];
+      const placeSnaps = () => {
+        if (!snap) return;
+        snaps.forEach((remove) => remove());
+        snaps = gsap.utils.toArray<HTMLElement>(SNAP_TARGETS).map((element) => {
+          const offset = Number.parseFloat(window.getComputedStyle(element).scrollMarginTop) || 0;
+          const top = element.getBoundingClientRect().top + window.scrollY - offset;
+          return snap.add(Math.round(Math.min(top, lenis.limit)));
+        });
+      };
+      placeSnaps();
 
       // Opening: wait for the curtain, then bring the hero in.
       const alreadyOpen = root.classList.contains("is-ready") || window.scrollY > 40;
@@ -87,7 +107,10 @@ export function Motion() {
       let refresh = 0;
       const observer = new ResizeObserver(() => {
         window.clearTimeout(refresh);
-        refresh = window.setTimeout(() => ScrollTrigger.refresh(), 150);
+        refresh = window.setTimeout(() => {
+          ScrollTrigger.refresh();
+          placeSnaps();
+        }, 150);
       });
       observer.observe(document.body);
 
@@ -96,6 +119,7 @@ export function Motion() {
         window.clearTimeout(refresh);
         observer.disconnect();
         gsap.ticker.remove(tick);
+        snap?.destroy();
         lenis.destroy();
         root.classList.add("is-ready");
       };

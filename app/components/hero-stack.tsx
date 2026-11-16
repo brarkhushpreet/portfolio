@@ -10,12 +10,8 @@ import { useReducedMotion } from "./use-reduced-motion";
 
 export type HeroSlide = { id: string; title: string; label: string; alt: string; src: string; light?: string };
 
-/** Bottom to top. The lines come from the "About" statement on this page. */
-const LAYERS = [
-  { id: "infrastructure", label: "Infrastructure", line: "the part that keeps it alive" },
-  { id: "service", label: "Service", line: "the part behind it" },
-  { id: "interface", label: "Interface", line: "the part people touch" },
-] as const;
+/** Bottom to top. */
+const LAYERS = [{ id: "infrastructure" }, { id: "service" }, { id: "interface" }] as const;
 
 const REST = { rx: 60, rz: -25 };
 const SLIDE_MS = 4200;
@@ -28,7 +24,6 @@ const PACKETS = [
   { x: 80, y: 28, duration: 3.8, delay: -2.4 },
 ];
 
-const pad = (value: number) => String(value).padStart(2, "0");
 const clamp = (value: number) => Math.min(1, Math.max(0, value));
 const mix = (from: number, to: number, amount: number) => from + (to - from) * amount;
 const smooth = (from: number, to: number, value: number) => {
@@ -59,7 +54,6 @@ export function HeroStack({ slides }: { slides: HeroSlide[] }) {
   const [choice, setChoice] = useState<boolean | null>(null);
   const [active, setActive] = useState<number | null>(null);
   const [show, setShow] = useState<{ index: number; previous: number | null; snap: boolean }>({ index: 0, previous: null, snap: false });
-  const [turn, setTurn] = useState(0);
   const paused = choice ?? reduced;
   const first = slides[0];
 
@@ -71,7 +65,7 @@ export function HeroStack({ slides }: { slides: HeroSlide[] }) {
       setShow((value) => ({ index: (value.index + 1) % slides.length, previous: value.index, snap: false }));
     }, SLIDE_MS);
     return () => window.clearInterval(timer);
-  }, [paused, slides.length, turn]);
+  }, [paused, slides.length]);
 
   useEffect(() => {
     const root = scene.current;
@@ -248,12 +242,7 @@ export function HeroStack({ slides }: { slides: HeroSlide[] }) {
     };
   }, [paused, first.id]);
 
-  const focus = active === null ? null : LAYERS[active];
   const current = slides[show.index];
-  const pick = (index: number) => {
-    setShow((value) => (value.index === index ? value : { index, previous: value.index, snap: false }));
-    setTurn((value) => value + 1);
-  };
 
   return (
     <div className={`scene${paused ? " is-paused" : ""}`} ref={scene}>
@@ -310,7 +299,6 @@ export function HeroStack({ slides }: { slides: HeroSlide[] }) {
                   </svg>
                 </div>
               ) : null}
-              <div className="layer-tag mono"><i /><span>{layer.label}</span></div>
             </div>
           ))}
           {CORNERS.map(([x, y]) => <span className="wire" key={`${x}-${y}`} style={{ left: `${x}%`, top: `${y}%` }} />)}
@@ -325,18 +313,6 @@ export function HeroStack({ slides }: { slides: HeroSlide[] }) {
       </div>
 
       <div className="scene-ui">
-        <div className="scene-ticks" role="group" aria-label="Project shown on the top layer">
-          {slides.map((slide, index) => (
-            <button type="button" key={slide.id} className={index === show.index ? "is-current" : ""} aria-label={`Show ${slide.title}`} aria-pressed={index === show.index} onClick={() => pick(index)}>
-              <i key={index === show.index ? `on-${turn}-${show.index}` : "off"} />
-            </button>
-          ))}
-        </div>
-        <p className="scene-now mono">
-          {focus
-            ? <><span>{focus.label}</span> — {focus.line}</>
-            : <><span>{pad(show.index + 1)} / {pad(slides.length)}</span> {current.title} — {current.label}</>}
-        </p>
         <a className="scene-link mono" ref={link} href={`#project-${current.id}`}>View project ↓</a>
         <button className="scene-toggle" type="button" onClick={() => setChoice(!paused)} aria-label={paused ? "Play the animation" : "Pause the animation"}>
           {paused ? <Play size={13} aria-hidden="true" /> : <Pause size={13} aria-hidden="true" />}

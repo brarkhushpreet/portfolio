@@ -34,7 +34,7 @@
   --line: rgba(240, 239, 234, 0.11);
   --line-strong: rgba(240, 239, 234, 0.26);
   --accent: #ff5a36;
-  --accent-fg: #0c0d0f;
+  --accent-fg: #ffffff;
   --glass: rgba(21, 22, 26, 0.72);
 
   --ease: cubic-bezier(0.19, 1, 0.22, 1);
@@ -56,10 +56,14 @@
   --line: rgba(16, 17, 19, 0.13);
   --line-strong: rgba(16, 17, 19, 0.32);
   --accent: #f2451c;
-  --accent-fg: #101113;
+  --accent-fg: #ffffff;
   --glass: rgba(248, 247, 244, 0.74);
   color-scheme: light;
 }
+/* The scrollbar sits outside the theme transition's snapshot, so on its own it would flip at once. It holds the old
+   scheme until the circle's edge crosses its thumb; the theme toggle times that. */
+:root[data-vt-hold="light"] { color-scheme: light; }
+:root[data-vt-hold="dark"] { color-scheme: dark; }
 
 /* ---------- Base ---------- */
 
@@ -287,9 +291,11 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
 }
 :root[data-theme="light"] .theme-toggle span { transform: rotate(180deg); }
 
-/* Theme switch: the new theme opens as a circle from the toggle. */
+/* Theme switch: light opens as a circle from the toggle; dark closes in on it, the light page shrinking into the button. */
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 ::view-transition-new(root) { animation: theme-open 0.8s var(--ease-io); }
+:root[data-vt="close"]::view-transition-new(root) { z-index: 1; animation: none; }
+:root[data-vt="close"]::view-transition-old(root) { z-index: 2; animation: theme-open 0.8s var(--ease-io) reverse both; }
 @keyframes theme-open {
   from { clip-path: circle(0 at var(--vt-x, 100%) var(--vt-y, 0)); }
   to { clip-path: circle(150vmax at var(--vt-x, 100%) var(--vt-y, 0)); }
@@ -324,19 +330,20 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   margin-top: clamp(12px, 1.6vw, 28px);
 }
 /* Centred on the 3D object beside it, which sits a little above the middle of its box to leave room for its controls. */
-.hero-copy { grid-column: 1 / span 4; align-self: center; display: grid; gap: clamp(20px, 2.4vw, 36px); padding-bottom: 58px; }
+.hero-copy { grid-column: 1 / span 5; align-self: center; display: grid; gap: clamp(24px, 2.8vw, 44px); padding-bottom: 58px; }
 .hero-lead {
   color: var(--muted);
-  font-size: clamp(20px, 2.05vw, 34px);
-  line-height: 1.16;
-  letter-spacing: -0.025em;
+  font-size: clamp(22px, 2.75vw, 52px);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   text-wrap: balance;
 }
-.hero-lead strong { color: var(--fg); font-weight: 500; }
-.hero-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.hero-lead strong { display: block; color: var(--fg); font-weight: 500; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: clamp(8px, 0.7vw, 12px); }
+.hero-actions .pill { height: clamp(46px, 3.5vw, 60px); padding: 0 clamp(20px, 1.7vw, 30px); font-size: clamp(15px, 1.12vw, 18px); }
 /* Beside the 3D object the three buttons stay on one row; there is clear space to their right. */
 @media (min-width: 1280px) { .hero-actions { flex-wrap: nowrap; width: max-content; } }
-.hero-scene { grid-column: 5 / -1; position: relative; min-height: clamp(300px, 42vh, 680px); container-type: size; }
+.hero-scene { grid-column: 6 / -1; position: relative; min-height: clamp(300px, 42vh, 680px); container-type: size; }
 
 /* ---------- Hero scene: one product, pulled apart ---------- */
 
@@ -361,8 +368,8 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
 .stage {
   /* Plane width, solved from the room available: once the three layers are
      spread, the tilted stack is about 1.22w wide and 0.8w tall. The rest of
-     the width is for the labels, the rest of the height for the controls. */
-  --w: clamp(200px, min((100cqw - 150px) / 1.22, (100cqh - 48px) / 0.82), 820px);
+     the height is for the controls. */
+  --w: clamp(200px, min(100cqw / 1.22, (100cqh - 48px) / 0.82), 820px);
   --g0: calc(var(--w) * 0.2);
   --round: var(--pr, calc(var(--w) * 0.022));
   position: absolute;
@@ -372,7 +379,7 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
 }
 .stage-space {
   position: absolute;
-  left: calc((100% - 140px) / 2);
+  left: 50%;
   top: calc(50% - 22px + var(--w) * 0.12);
   width: var(--w);
   aspect-ratio: 2 / 1;
@@ -473,26 +480,6 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
 .ring:nth-child(3) { animation-delay: -2.8s; }
 @keyframes ring { from { transform: scale(0.06); opacity: 0.9; } to { transform: scale(1); opacity: 0; } }
 
-/* Labels sit on a corner of their layer but turn back to face the camera. */
-.layer-tag {
-  position: absolute;
-  left: 100%;
-  top: 100%;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  color: var(--muted);
-  white-space: nowrap;
-  opacity: var(--ui);
-  transform-origin: 0 0;
-  transform: rotateZ(calc(var(--rz) * -1)) rotateX(calc(var(--rx) * -1)) translate(12px, -50%);
-  transition: color 0.4s var(--ease);
-}
-.layer-tag i { width: clamp(18px, 2.6cqw, 40px); height: 1px; background: currentColor; }
-.layer.is-active .layer-tag { color: var(--fg); }
-.layer.is-active .layer-tag i { background: var(--accent); }
-
 .wire {
   position: absolute;
   width: 1px;
@@ -525,18 +512,11 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   inset: auto 0 0 0;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 14px;
   color: var(--muted);
   opacity: var(--ui);
 }
-.scene-ticks { display: flex; gap: 4px; }
-.scene-ticks button { display: grid; align-items: center; width: 22px; height: 28px; }
-.scene-ticks i { position: relative; display: block; height: 2px; overflow: hidden; border-radius: 2px; background: var(--line-strong); }
-.scene-ticks .is-current i::after { content: ""; position: absolute; inset: 0; background: var(--fg); transform-origin: left; animation: tick 4.2s linear both; }
-.is-paused .scene-ticks .is-current i::after { animation: none; }
-@keyframes tick { from { transform: scaleX(0); } }
-.scene-now { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.scene-now span { margin-right: 6px; color: var(--fg); }
 .scene-link { color: var(--fg); white-space: nowrap; }
 .scene-link:hover { color: var(--accent); }
 .scene-toggle {
@@ -891,13 +871,16 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
 /* ---------- Contact ---------- */
 
 .contact { padding-bottom: clamp(96px, 12vw, 200px); }
+/* The whole section, Send button included, fits one screen when it is scrolled to: the heading and the gap under it also answer to the viewport height. */
+.contact .section-head { margin-bottom: clamp(32px, 5svh, 72px); }
+.contact .display--xl { font-size: clamp(56px, min(13.6vw, 21svh), 248px); }
 .contact-row { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--gap); align-items: start; }
 .contact-note { grid-column: 1 / span 4; color: var(--muted); font-size: clamp(20px, 2.05vw, 34px); line-height: 1.16; letter-spacing: -0.025em; text-wrap: balance; }
 .contact-row > div { grid-column: 6 / -1; }
 
 .contact-form fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
 .contact-honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
-.field { display: grid; gap: 8px; padding: 18px 0 14px; border-bottom: 1px solid var(--line-strong); transition: border-color 0.4s var(--ease); }
+.field { display: grid; gap: 8px; padding: 14px 0 12px; border-bottom: 1px solid var(--line-strong); transition: border-color 0.4s var(--ease); }
 .field:first-child { padding-top: 0; }
 .field:focus-within { border-color: var(--fg); }
 .field label { color: var(--muted); }
@@ -955,8 +938,7 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   .hero-copy, .hero-scene { grid-column: 1 / -1; }
   /* A definite height: container units read 0 from a height that only comes from min-height. */
   .hero-scene { height: clamp(300px, 56vw, 520px); min-height: 0; }
-  .stage { --w: clamp(180px, min((100cqw - 124px) / 1.22, (100cqh - 48px) / 0.82), 820px); }
-  .stage-space { left: calc((100% - 116px) / 2); }
+  .stage { --w: clamp(180px, min(100cqw / 1.22, (100cqh - 48px) / 0.82), 820px); }
 
   .work-index { display: none; }
   .work-list { grid-column: 1 / -1; }
@@ -981,7 +963,6 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   .hero-scene { height: 92vw; margin-top: 8px; }
   .stage { --w: clamp(180px, min(100cqw / 1.22, (100cqh - 56px) / 0.82), 820px); }
   .stage-space { left: 50%; }
-  .layer-tag { display: none; }
   .scene-link { display: none; }
 
 
