@@ -168,4 +168,14 @@ export const experience = [
   },
 ];
 
-export const tools = ["React", "Next.js", "TypeScript", "Node.js", "Python", "PostgreSQL", "Redis", "AWS"];
+/** The everyday toolkit, grouped by the layer of the product each tool serves. */
+export const tools = [
+  { name: "React", layer: "Interface" },
+  { name: "Next.js", layer: "Interface" },
+  { name: "TypeScript", layer: "Interface · Service" },
+  { name: "Node.js", layer: "Service" },
+  { name: "Python", layer: "Service" },
+  { name: "PostgreSQL", layer: "Infrastructure" },
+  { name: "Redis", layer: "Infrastructure" },
+  { name: "AWS", layer: "Infrastructure" },
+];

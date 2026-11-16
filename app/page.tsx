@@ -1,8 +1,9 @@
 import { ArrowDown, ArrowUpRight, Download } from "lucide-react";
 import { Fragment } from "react";
 import { ContactForm } from "./contact-form";
-import { experience, links, tools } from "./content";
-import { HeroName } from "./components/hero-name";
+import { links, tools } from "./content";
+import { Experience } from "./components/experience";
+import { FootMark, HeroName } from "./components/hero-name";
 import { HeroStack } from "./components/hero-stack";
 import { LocalTime } from "./components/local-time";
 import { Motion } from "./components/motion";
@@ -61,8 +62,8 @@ export default function Home() {
               <p className="mono">Tools I work with</p>
               <p className="toolkit-list">
                 {tools.map((tool, index) => (
-                  <Fragment key={tool}>
-                    {tool}<span>{index < tools.length - 1 ? ", " : "."}</span>
+                  <Fragment key={tool.name}>
+                    <span className="tool" data-layer={tool.layer}>{tool.name}</span><span className="sep">{index < tools.length - 1 ? ", " : "."}</span>
                   </Fragment>
                 ))}
               </p>
@@ -86,20 +87,9 @@ export default function Home() {
           <p className="experience-intro" data-fade>
             Building and operating AI products across interfaces, services, realtime systems, and AWS infrastructure.
           </p>
-          <ol className="xp">
-            {experience.map((item) => (
-              <li className="xp-row" key={item.date} data-fade>
-                <time className="mono">{item.date}</time>
-                <h3>{item.role}</h3>
-                <div className="xp-copy">
-                  <p>{item.copy}</p>
-                  <ul className="tags" aria-label={`${item.role} technologies`}>
-                    {item.tech.map((tech) => <li key={tech}>{tech}</li>)}
-                  </ul>
-                </div>
-              </li>
-            ))}
-          </ol>
+          <div data-fade>
+            <Experience />
+          </div>
         </section>
 
         <section className="contact wrap" id="contact" aria-labelledby="contact-title">
@@ -124,7 +114,7 @@ export default function Home() {
             <a href="#top">Back to top ↑</a>
           </nav>
         </div>
-        <p className="foot-mark" aria-hidden="true">Khushpreet</p>
+        <FootMark />
       </footer>
     </>
   );
