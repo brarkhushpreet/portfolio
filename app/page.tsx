@@ -49,8 +49,16 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="work wrap" id="work" aria-labelledby="work-title">
+          <header className="section-head">
+            <p className="mono section-tag"><span>(01)</span> From interface to infrastructure</p>
+            <h2 className="display" id="work-title" data-rise><Words text="Selected work" /></h2>
+          </header>
+          <Work />
+        </section>
+
         <section className="about wrap" id="about" aria-labelledby="about-title">
-          <p className="mono section-tag" id="about-title"><span>(01)</span> About the way I work</p>
+          <p className="mono section-tag" id="about-title"><span>(02)</span> About the way I work</p>
           <p className="statement" data-scrub>
             <Words text="I like the whole thing — the interface people touch, the service behind it, and the infrastructure that keeps it alive." />
           </p>
@@ -69,14 +77,6 @@ export default function Home() {
               </p>
             </div>
           </div>
-        </section>
-
-        <section className="work wrap" id="work" aria-labelledby="work-title">
-          <header className="section-head">
-            <p className="mono section-tag"><span>(02)</span> From interface to infrastructure</p>
-            <h2 className="display" id="work-title" data-rise><Words text="Selected work" /></h2>
-          </header>
-          <Work />
         </section>
 
         <section className="experience wrap" id="experience" aria-labelledby="experience-title">

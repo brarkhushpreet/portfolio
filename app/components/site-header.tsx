@@ -5,8 +5,8 @@ import { links } from "../content";
 import { ThemeToggle } from "./theme-toggle";
 
 const sections = [
-  { id: "about", label: "About" },
   { id: "work", label: "Work" },
+  { id: "about", label: "About" },
   { id: "experience", label: "Experience" },
   { id: "contact", label: "Contact" },
 ];
