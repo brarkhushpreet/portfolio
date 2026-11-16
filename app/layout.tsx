@@ -39,11 +39,12 @@ export const metadata: Metadata = {
 };
 
 /**
- * Runs before first paint: marks the document as scripted, restores a saved
- * theme (dark is the default), and guarantees the opening curtain lifts even
- * if the app bundle never arrives.
+ * Runs before first paint: marks the document as scripted, restores the theme
+ * picked earlier in this visit (every new visit opens in dark, the default; a
+ * choice once kept for good in localStorage is cleared), and guarantees the
+ * opening curtain lifts even if the app bundle never arrives.
  */
-const bootScript = `(function(){var d=document.documentElement;d.classList.add("js");try{var t=localStorage.getItem("portfolio-theme");if(t==="light"||t==="dark"){d.dataset.theme=t;var m=document.querySelector('meta[name="theme-color"]');if(m&&t==="light")m.setAttribute("content","#edece8")}}catch(e){}setTimeout(function(){d.classList.add("is-ready")},3500)})()`;
+const bootScript = `(function(){var d=document.documentElement;d.classList.add("js");try{localStorage.removeItem("portfolio-theme");var t=sessionStorage.getItem("portfolio-theme");if(t==="light"||t==="dark"){d.dataset.theme=t;var m=document.querySelector('meta[name="theme-color"]');if(m&&t==="light")m.setAttribute("content","#edece8")}}catch(e){}setTimeout(function(){d.classList.add("is-ready")},3500)})()`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (

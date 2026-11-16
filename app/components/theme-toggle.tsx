@@ -32,7 +32,8 @@ export function ThemeToggle() {
     const apply = () => {
       root.dataset.theme = next;
       document.querySelector('meta[name="theme-color"]')?.setAttribute("content", THEME_COLORS[next]);
-      try { window.localStorage.setItem("portfolio-theme", next); } catch { /* The theme still applies for this visit. */ }
+      // Kept for this visit only: every new visit opens in dark, the default.
+      try { window.sessionStorage.setItem("portfolio-theme", next); } catch { /* The theme still applies to this page. */ }
     };
     const bounds = event.currentTarget.getBoundingClientRect();
     const originX = bounds.left + bounds.width / 2;
