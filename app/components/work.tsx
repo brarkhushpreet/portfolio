@@ -175,7 +175,9 @@ export function Work() {
   const shot = viewer && viewed ? viewed.shots[viewer.shot] : null;
 
   return (
-    <div className="work-grid">
+    // The "Work" anchor is here, not on the section, so links to it rest on the first
+    // project with its image landed instead of part-way through the hero's flight.
+    <div className="work-grid" id="work">
       <aside className="work-index" aria-label="Project index">
         <div className="counter" aria-hidden="true">
           <span className="counter-now" key={active}>{pad(active + 1)}</span>

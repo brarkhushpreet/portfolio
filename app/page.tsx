@@ -55,7 +55,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="work wrap" id="work" aria-labelledby="work-title">
+        <section className="work wrap" aria-labelledby="work-title">
           <header className="section-head">
             <p className="mono section-tag"><span>(01)</span> From interface to infrastructure</p>
             <h2 className="display" id="work-title" data-rise><Words text="Selected work" /></h2>

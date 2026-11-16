@@ -334,6 +334,8 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
 }
 .hero-lead strong { color: var(--fg); font-weight: 500; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+/* Beside the 3D object the three buttons stay on one row; there is clear space to their right. */
+@media (min-width: 1280px) { .hero-actions { flex-wrap: nowrap; width: max-content; } }
 .hero-scene { grid-column: 5 / -1; position: relative; min-height: clamp(300px, 42vh, 680px); container-type: size; }
 
 /* ---------- Hero scene: one product, pulled apart ---------- */

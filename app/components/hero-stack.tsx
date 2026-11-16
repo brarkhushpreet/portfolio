@@ -19,6 +19,8 @@ const LAYERS = [
 
 const REST = { rx: 60, rz: -25 };
 const SLIDE_MS = 4200;
+/** Matches `scroll-margin-top` on anchored sections. */
+const HEADER_OFFSET = 96;
 const CORNERS = [[0, 0], [100, 0], [100, 100], [0, 100]];
 const PACKETS = [
   { x: 24, y: 34, duration: 3.4, delay: 0 },
@@ -136,9 +138,11 @@ export function HeroStack({ slides }: { slides: HeroSlide[] }) {
         targetRect = target.getBoundingClientRect();
         const article = target.closest(".project");
         const headRoom = article ? targetRect.top - article.getBoundingClientRect().top : 0;
-        // Land with the project heading in view, and the whole image on screen when it fits.
-        arriveTop = Math.max(84, Math.min(96 + headRoom, window.innerHeight - targetRect.height - 24));
-        const distance = targetRect.top + window.scrollY - arriveTop;
+        // Land where the page rests when a link jumps to this project: its heading just under the
+        // fixed header. Counting the last pixel and a half as arrived keeps a smooth scroll that
+        // settles a fraction short from leaving the plane hovering over a hidden image.
+        arriveTop = HEADER_OFFSET + headRoom;
+        const distance = targetRect.top + window.scrollY - arriveTop - 1.5;
         progress = distance > 0 ? clamp(window.scrollY / distance) : 0;
       } else {
         landing?.classList.remove("is-landing");
