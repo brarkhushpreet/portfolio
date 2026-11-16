@@ -1,15 +1,21 @@
 import { ArrowDown, ArrowUpRight, Download } from "lucide-react";
 import { Fragment } from "react";
 import { ContactForm } from "./contact-form";
-import { links, tools } from "./content";
+import { links, projects, tools } from "./content";
 import { Experience } from "./components/experience";
 import { FootMark, HeroName } from "./components/hero-name";
-import { HeroStack } from "./components/hero-stack";
+import { HeroStack, type HeroSlide } from "./components/hero-stack";
 import { LocalTime } from "./components/local-time";
 import { Motion } from "./components/motion";
 import { SiteHeader } from "./components/site-header";
 import { Words } from "./components/words";
 import { Work } from "./components/work";
+
+/** One screen per project for the hero: the image that leads its panel further down. */
+const slides: HeroSlide[] = projects.map((project) => {
+  const shot = project.shots[project.lead];
+  return { id: project.id, title: project.shortTitle, label: shot.label, alt: shot.alt, src: shot.src, light: shot.light };
+});
 
 export default function Home() {
   const year = new Date().getFullYear();
@@ -44,7 +50,7 @@ export default function Home() {
               </div>
             </div>
             <div className="hero-scene" data-intro>
-              <HeroStack video="/projects/echopass-method-motion.mp4" poster="/projects/echopass-method-motion.webp" />
+              <HeroStack slides={slides} />
             </div>
           </div>
         </section>

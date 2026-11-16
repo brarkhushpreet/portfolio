@@ -98,7 +98,7 @@ test("screenshots captured in both themes ship both variants", async () => {
 
 test("every referenced asset exists", async () => {
   const { projects, links } = await readContent();
-  const files = new Set([links.resume, "/og.png", "/favicon.svg", "/fonts/geist-latin.woff2", "/fonts/geist-mono-latin.woff2", "/projects/echopass-method-motion.mp4", "/projects/echopass-method-motion.webp"]);
+  const files = new Set([links.resume, "/og.png", "/favicon.svg", "/fonts/geist-latin.woff2", "/fonts/geist-mono-latin.woff2"]);
   for (const project of projects) {
     assert.ok(project.shots[project.lead], `${project.id}: lead shot`);
     for (const shot of project.shots) {

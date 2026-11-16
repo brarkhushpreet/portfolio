@@ -323,7 +323,8 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   min-height: 0;
   margin-top: clamp(12px, 1.6vw, 28px);
 }
-.hero-copy { grid-column: 1 / span 5; align-self: end; display: grid; gap: clamp(20px, 2.4vw, 36px); padding-bottom: 6px; }
+/* Centred on the 3D object beside it, which sits a little above the middle of its box to leave room for its controls. */
+.hero-copy { grid-column: 1 / span 4; align-self: center; display: grid; gap: clamp(20px, 2.4vw, 36px); padding-bottom: 58px; }
 .hero-lead {
   color: var(--muted);
   font-size: clamp(20px, 2.05vw, 34px);
@@ -333,26 +334,41 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
 }
 .hero-lead strong { color: var(--fg); font-weight: 500; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.hero-scene { grid-column: 6 / -1; position: relative; min-height: clamp(300px, 42vh, 680px); container-type: size; }
+.hero-scene { grid-column: 5 / -1; position: relative; min-height: clamp(300px, 42vh, 680px); container-type: size; }
 
 /* ---------- Hero scene: one product, pulled apart ---------- */
 
-.scene { position: absolute; inset: 0; }
+.scene {
+  /* The pose. Script drives these; the values here are the still pose. */
+  --rx: 60deg;
+  --rz: -25deg;
+  --spread: 1;
+  --tx: 0px;
+  --ty: 0px;
+  --s: 1;
+  --amb: 1;
+  --ui: 1;
+  --shade: rgba(0, 0, 0, 0.6);
+  position: absolute;
+  inset: 0;
+}
+:root[data-theme="light"] .scene { --shade: rgba(16, 17, 19, 0.2); }
+.scene.is-flying { pointer-events: none; }
+.scene.is-landed .stage { visibility: hidden; }
+
 .stage {
   /* Plane width, solved from the room available: once the three layers are
-     spread, the tilted stack is about 1.2w wide and 0.96w tall. The rest of
-     the width is for the labels, the rest of the height for the caption. */
-  --w: clamp(200px, min((100cqw - 150px) / 1.2, (100cqh - 48px) / 0.96), 780px);
+     spread, the tilted stack is about 1.22w wide and 0.8w tall. The rest of
+     the width is for the labels, the rest of the height for the controls. */
+  --w: clamp(200px, min((100cqw - 150px) / 1.22, (100cqh - 48px) / 0.82), 820px);
   --g0: calc(var(--w) * 0.2);
+  --round: var(--pr, calc(var(--w) * 0.022));
   position: absolute;
   inset: 0;
   perspective: 1800px;
-  perspective-origin: 45% 40%;
+  perspective-origin: 45% 45%;
 }
 .stage-space {
-  --rx: 57deg;
-  --rz: -35deg;
-  --spread: 1;
   position: absolute;
   left: calc((100% - 140px) / 2);
   top: calc(50% - 22px + var(--w) * 0.12);
@@ -360,7 +376,17 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   aspect-ratio: 2 / 1;
   margin: calc(var(--w) * -0.25) 0 0 calc(var(--w) * -0.5);
   transform-style: preserve-3d;
-  transform: rotateX(var(--rx)) rotateZ(var(--rz));
+  transform: translate3d(var(--tx), var(--ty), 0) scale(var(--s)) rotateX(var(--rx)) rotateZ(var(--rz));
+}
+
+/* A soft shadow on the "floor" grounds the stack. */
+.ground {
+  position: absolute;
+  inset: -16% -12%;
+  background: radial-gradient(closest-side, var(--shade), transparent 74%);
+  opacity: var(--amb);
+  transform: translateZ(calc(var(--g0) * -0.5));
+  pointer-events: none;
 }
 
 .layer {
@@ -375,26 +401,49 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   position: absolute;
   inset: 0;
   overflow: hidden;
-  border: 1px solid var(--ink);
-  border-radius: calc(var(--w) * 0.022);
-  transition: transform 0.7s var(--ease), border-color 0.5s var(--ease), box-shadow 0.7s var(--ease);
+  border: var(--bw, 1px) solid var(--ink);
+  border-radius: var(--round);
+  opacity: var(--amb);
+  transition: transform 0.7s var(--ease), border-color 0.5s var(--ease);
 }
 .layer.is-active .layer-body { transform: translateZ(calc(var(--g0) * 0.3)); border-color: var(--fg); }
 .layer-body svg { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: var(--ink); stroke-width: 1; transition: stroke 0.5s var(--ease); }
 .layer-body svg * { vector-effect: non-scaling-stroke; }
 .layer.is-active .layer-body svg { stroke: var(--fg); }
 
-.layer--interface .layer-body {
-  border-color: var(--line-strong);
-  background: var(--bg-raised) top center / cover no-repeat;
-  box-shadow: 0 calc(var(--w) * 0.05) calc(var(--w) * 0.22) calc(var(--w) * -0.04) color-mix(in srgb, var(--accent) 34%, transparent);
+/* The interface layer is a slab with a deck of project screens on it. */
+.layer--interface { cursor: pointer; }
+.layer--interface .layer-body { overflow: visible; border: 0; opacity: 1; transform-style: preserve-3d; }
+.glow, .slab { position: absolute; inset: 0; border-radius: var(--round); opacity: var(--amb); pointer-events: none; }
+.glow {
+  transform: translateZ(calc(var(--w) * -0.016));
+  box-shadow: 0 calc(var(--w) * 0.05) calc(var(--w) * 0.24) calc(var(--w) * -0.03) color-mix(in srgb, var(--accent) 40%, transparent);
 }
-.layer--interface video { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
-.layer--interface .layer-body::after { content: ""; position: absolute; inset: 0; background: var(--bg); opacity: 0; transition: opacity 0.5s var(--ease); }
-.layer--interface.is-dim .layer-body::after { opacity: 0.55; }
+.slab { background: color-mix(in srgb, var(--fg) 17%, var(--bg)); }
+.slab:nth-of-type(2) { transform: translateZ(calc(var(--w) * -0.004)); }
+.slab:nth-of-type(3) { transform: translateZ(calc(var(--w) * -0.008)); }
+.slab:nth-of-type(4) { transform: translateZ(calc(var(--w) * -0.012)); }
+.slide {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border: var(--bw, 1px) solid color-mix(in srgb, var(--line-strong) calc(var(--amb) * 100%), var(--line));
+  border-radius: var(--round);
+  background: var(--bg-raised);
+  opacity: 0;
+  transform: translateZ(calc(var(--g0) * 0.55));
+  transition: opacity 0.6s var(--ease), transform 1s var(--ease);
+}
+.slide.is-current { opacity: 1; transform: none; }
+.slide.is-leaving { transform: translateZ(calc(var(--g0) * -0.4)); }
+.deck.is-snapped .slide { transition: none; }
+.slide img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+.slide::after { content: ""; position: absolute; inset: 0; background: var(--bg); opacity: var(--veil, 0); }
+.scene:not(.is-flying) .slide::after { transition: opacity 0.5s var(--ease); }
+.layer--interface.is-dim .slide::after { opacity: 0.55; }
 
-.layer--service .layer-body { background: color-mix(in srgb, var(--fg) 5.5%, transparent); }
-.layer--service .grid { opacity: 0.45; }
+.layer--service .layer-body { background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.layer--service .grid { opacity: 0.5; }
 .layer--service .route { stroke: var(--accent); stroke-dasharray: 5 7; animation: route 1.4s linear infinite; }
 .layer--service rect { fill: var(--bg); }
 @keyframes route { to { stroke-dashoffset: -24; } }
@@ -403,7 +452,7 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   border-style: dashed;
   background:
     radial-gradient(circle, var(--ink) 1px, transparent 1.5px) 0 0 / calc(var(--w) * 0.05) calc(var(--w) * 0.05),
-    color-mix(in srgb, var(--fg) 2.5%, transparent);
+    color-mix(in srgb, var(--fg) 4%, transparent);
 }
 .layer--infrastructure rect, .layer--infrastructure circle { fill: var(--bg); }
 .ring {
@@ -433,6 +482,7 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   padding: 8px 0;
   color: var(--muted);
   white-space: nowrap;
+  opacity: var(--ui);
   transform-origin: 0 0;
   transform: rotateZ(calc(var(--rz) * -1)) rotateX(calc(var(--rx) * -1)) translate(12px, -50%);
   transition: color 0.4s var(--ease);
@@ -446,6 +496,7 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   width: 1px;
   height: calc(var(--g0) * var(--spread) * 2);
   background: repeating-linear-gradient(to bottom, var(--line-strong) 0 3px, transparent 3px 8px);
+  opacity: var(--amb);
   transform-origin: top;
   transform: rotateX(90deg);
 }
@@ -455,6 +506,7 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   aspect-ratio: 1;
   border-radius: 50%;
   background: var(--accent);
+  opacity: var(--amb);
   animation: packet 3.6s linear infinite;
 }
 @keyframes packet {
@@ -463,18 +515,30 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
 }
 .is-paused .packet, .is-paused .ring, .is-paused .route { animation-play-state: paused; }
 
-.scene-caption { position: absolute; left: 0; bottom: 0; color: var(--muted); }
-.scene-caption span { color: var(--fg); }
-.scene-caption .for-touch { display: none; color: inherit; }
-.scene-caption .for-mouse { color: inherit; }
-@media (hover: none) {
-  .scene-caption .for-touch { display: inline; }
-  .scene-caption .for-mouse { display: none; }
-}
-.scene-toggle {
+/* The real image stays out of the way while the travelling plane is on its way to it. */
+.frame.is-landing { visibility: hidden; }
+
+.scene-ui {
   position: absolute;
-  right: 0;
-  bottom: -6px;
+  inset: auto 0 0 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--muted);
+  opacity: var(--ui);
+}
+.scene-ticks { display: flex; gap: 4px; }
+.scene-ticks button { display: grid; align-items: center; width: 22px; height: 28px; }
+.scene-ticks i { position: relative; display: block; height: 2px; overflow: hidden; border-radius: 2px; background: var(--line-strong); }
+.scene-ticks .is-current i::after { content: ""; position: absolute; inset: 0; background: var(--fg); transform-origin: left; animation: tick 4.2s linear both; }
+.is-paused .scene-ticks .is-current i::after { animation: none; }
+@keyframes tick { from { transform: scaleX(0); } }
+.scene-now { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.scene-now span { margin-right: 6px; color: var(--fg); }
+.scene-link { color: var(--fg); white-space: nowrap; }
+.scene-link:hover { color: var(--accent); }
+.scene-toggle {
+  flex: none;
   display: grid;
   place-items: center;
   width: 32px;
@@ -613,7 +677,8 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
 
 /* ---------- Work ---------- */
 
-.work { padding-block: clamp(96px, 11vw, 190px) clamp(110px, 14vw, 240px); }
+/* Above the hero, so the plane that travels down from it passes behind this section's type. */
+.work { position: relative; z-index: 1; padding-block: clamp(96px, 11vw, 190px) clamp(110px, 14vw, 240px); }
 .work-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--gap); align-items: start; }
 
 .work-index { grid-column: 1 / span 3; position: sticky; top: 108px; padding-right: var(--gap); }
@@ -888,7 +953,7 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   .hero-copy, .hero-scene { grid-column: 1 / -1; }
   /* A definite height: container units read 0 from a height that only comes from min-height. */
   .hero-scene { height: clamp(300px, 56vw, 520px); min-height: 0; }
-  .stage { --w: clamp(180px, min((100cqw - 124px) / 1.2, (100cqh - 48px) / 0.96), 780px); }
+  .stage { --w: clamp(180px, min((100cqw - 124px) / 1.22, (100cqh - 48px) / 0.82), 820px); }
   .stage-space { left: calc((100% - 116px) / 2); }
 
   .work-index { display: none; }
@@ -912,10 +977,10 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   .name-word { display: block; width: max-content; }
   .hero-actions .pill { flex: 1 1 auto; }
   .hero-scene { height: 92vw; margin-top: 8px; }
-  .stage { --w: clamp(180px, min(100cqw / 1.2, (100cqh - 56px) / 0.96), 780px); }
+  .stage { --w: clamp(180px, min(100cqw / 1.22, (100cqh - 56px) / 0.82), 820px); }
   .stage-space { left: 50%; }
   .layer-tag { display: none; }
-  .scene-caption { max-width: calc(100% - 44px); }
+  .scene-link { display: none; }
 
 
   .about-row, .contact-row { grid-template-columns: 1fr; gap: 40px; }

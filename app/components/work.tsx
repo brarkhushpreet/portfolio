@@ -110,7 +110,7 @@ function ProjectPanel({ project, index, onOpen }: { project: Project; index: num
         <p>{project.subtitle}</p>
       </header>
 
-      <figure className="project-lead" data-fade>
+      <figure className="project-lead" {...(index > 0 ? { "data-fade": true } : {})}>
         <div className="frame">
           {lead.video ? <Clip src={lead.video} poster={lead.src} alt={lead.alt} /> : <ShotMedia shot={lead} />}
           <OpenButton label={lead.label} onOpen={() => onOpen(project.lead)} />
