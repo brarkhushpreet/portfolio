@@ -4,17 +4,17 @@ import { ContactForm } from "./contact-form";
 import { links, projects, tools } from "./content";
 import { Experience } from "./components/experience";
 import { FootMark, HeroName } from "./components/hero-name";
-import { HeroStack, type HeroSlide } from "./components/hero-stack";
+import { HeroScene, type HeroSlide } from "./components/hero-scene";
 import { LocalTime } from "./components/local-time";
 import { Motion } from "./components/motion";
 import { SiteHeader } from "./components/site-header";
 import { Words } from "./components/words";
 import { Work } from "./components/work";
 
-/** One screen per project for the hero: the image that leads its panel further down. */
+/** One screen per project for the hero: the image that leads its panel further down. The first lands on the first project. */
 const slides: HeroSlide[] = projects.map((project) => {
   const shot = project.shots[project.lead];
-  return { id: project.id, title: project.shortTitle, label: shot.label, alt: shot.alt, src: shot.src, light: shot.light };
+  return { id: project.id, title: project.shortTitle, src: shot.src, light: shot.light };
 });
 
 export default function Home() {
@@ -37,20 +37,17 @@ export default function Home() {
             <span>Sirsa, Haryana</span>
             <LocalTime />
           </div>
-          <HeroName />
-          <div className="hero-lower">
-            <div className="hero-copy">
-              <p className="hero-lead" data-intro>
-                <strong>Full-stack software engineer.</strong> I build AI products, realtime systems, and cloud infrastructure.
-              </p>
-              <div className="hero-actions" data-intro>
-                <a className="pill pill--solid" href="#work">Selected work <ArrowDown size={16} aria-hidden="true" /></a>
-                <a className="pill" href={links.github} target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={16} aria-hidden="true" /></a>
-                <a className="pill" href={links.resume} download>Résumé <Download size={15} aria-hidden="true" /></a>
-              </div>
-            </div>
-            <div className="hero-scene" data-intro>
-              <HeroStack slides={slides} />
+          <HeroScene slides={slides}>
+            <HeroName />
+          </HeroScene>
+          <div className="hero-foot">
+            <p className="hero-lead" data-intro>
+              <strong>Full-stack software engineer.</strong> I build AI products, realtime systems, and cloud infrastructure.
+            </p>
+            <div className="hero-actions" data-intro>
+              <a className="pill pill--solid" href="#work">Selected work <ArrowDown size={16} aria-hidden="true" /></a>
+              <a className="pill" href={links.github} target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={16} aria-hidden="true" /></a>
+              <a className="pill" href={links.resume} download>Résumé <Download size={15} aria-hidden="true" /></a>
             </div>
           </div>
         </section>

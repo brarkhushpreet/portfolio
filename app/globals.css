@@ -303,7 +303,17 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
 
 /* ---------- Hero ---------- */
 
-.hero { display: flex; flex-direction: column; min-height: 100svh; padding-top: clamp(96px, 13.5vh, 168px); padding-bottom: clamp(18px, 2.6vh, 34px); }
+.hero {
+  --hero-top: clamp(96px, 13.5vh, 168px);
+  --hero-bottom: clamp(18px, 2.6vh, 34px);
+  --hero-gap: clamp(6px, 1vw, 16px);
+  --hero-lead: clamp(20px, 1.95vw, 36px);
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  padding-top: var(--hero-top);
+  padding-bottom: var(--hero-bottom);
+}
 
 .hero-meta { display: grid; grid-template-columns: 1fr auto 1fr; gap: var(--gap); color: var(--muted); }
 .hero-meta > :first-child { color: var(--fg); }
@@ -311,42 +321,56 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
 .local-time { font-variant-numeric: tabular-nums; }
 
 .name {
-  margin-top: clamp(14px, 1.6vw, 28px);
+  position: relative;
+  width: 100%;
   font-size: min(12.6vw, 236px);
   font-weight: 540;
   line-height: 0.8;
   letter-spacing: -0.065em;
+  /* The screen under the letters stays clickable; the letters' cursor effect listens on the window. */
+  pointer-events: none;
 }
 .name-line { display: block; margin-left: -0.05em; white-space: nowrap; }
 .name-word { display: inline-block; overflow: hidden; padding: 0.1em 0.07em 0.24em 0.02em; margin: -0.1em -0.07em -0.24em -0.02em; }
 .name-char { display: inline-block; text-align: center; will-change: transform; }
 
-.hero-lower {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: var(--gap);
-  min-height: 0;
-  margin-top: clamp(12px, 1.6vw, 28px);
-}
-/* Centred on the 3D object beside it, which sits a little above the middle of its box to leave room for its controls. */
-.hero-copy { grid-column: 1 / span 5; align-self: center; display: grid; gap: clamp(24px, 2.8vw, 44px); padding-bottom: 58px; }
+/* Above the scene, so the plane that leaves it passes behind the copy and the buttons. */
+.hero-foot { position: relative; z-index: 1; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--gap) clamp(24px, 4vw, 72px); }
 .hero-lead {
+  max-width: 21em;
   color: var(--muted);
-  font-size: clamp(22px, 2.75vw, 52px);
-  line-height: 1.1;
+  font-size: var(--hero-lead);
+  line-height: 1.12;
   letter-spacing: -0.03em;
   text-wrap: balance;
 }
 .hero-lead strong { display: block; color: var(--fg); font-weight: 500; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: clamp(8px, 0.7vw, 12px); }
 .hero-actions .pill { height: clamp(46px, 3.5vw, 60px); padding: 0 clamp(20px, 1.7vw, 30px); font-size: clamp(15px, 1.12vw, 18px); }
-/* Beside the 3D object the three buttons stay on one row; there is clear space to their right. */
-@media (min-width: 1280px) { .hero-actions { flex-wrap: nowrap; width: max-content; } }
-.hero-scene { grid-column: 6 / -1; position: relative; min-height: clamp(300px, 42vh, 680px); container-type: size; }
 
-/* ---------- Hero scene: one product, pulled apart ---------- */
+/* ---------- Hero scene: one product, pulled apart, in the middle of its system ---------- */
 
+/* The ground fills the whole first screen, edge to edge, behind everything in the hero. */
+.hero { position: relative; isolation: isolate; }
+.hero-field {
+  position: absolute;
+  top: 0;
+  left: calc(50% - 50vw);
+  z-index: -1;
+  width: 100vw;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.6s var(--ease) 0.2s;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 88%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 88%, transparent);
+}
+html.is-ready .hero-field, html:not(.js) .hero-field { opacity: 1; }
+
+/* The name sits over the top of the stack. */
+.hero .name { z-index: 2; }
+
+/* Takes the hero's spare height. */
 .scene {
   /* The pose. Script drives these; the values here are the still pose. */
   --rx: 60deg;
@@ -356,31 +380,35 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   --ty: 0px;
   --s: 1;
   --amb: 1;
-  --ui: 1;
   --shade: rgba(0, 0, 0, 0.6);
-  position: absolute;
-  inset: 0;
+  --scene-min: clamp(190px, 24svh, 640px);
+  /* The height of the scene, worked out from the viewport: a first screen less the padding of the hero, its
+     top line, the name and its three-line foot. (The height itself is flexed, so it cannot be read here.) */
+  --sh: max(var(--scene-min), 100svh - var(--hero-top) - var(--hero-bottom) - 2 * var(--hero-gap) - 17px - min(12.6vw, 236px) * 0.8 - 3.36 * var(--hero-lead));
+  /* Plane width. Spread and tilted, the stack is about 1.22 planes wide and 0.82 tall. */
+  --w: clamp(220px, min(42vw, var(--sh) / 0.86), 760px);
+  --g0: calc(var(--w) * 0.2);
+  --round: var(--pr, calc(var(--w) * 0.022));
+  position: relative;
+  flex: 1;
+  min-height: var(--scene-min);
+  margin-block: var(--hero-gap);
+  pointer-events: none;
 }
 :root[data-theme="light"] .scene { --shade: rgba(16, 17, 19, 0.2); }
-.scene.is-flying { pointer-events: none; }
 .scene.is-landed .stage { visibility: hidden; }
 
 .stage {
-  /* Plane width, solved from the room available: once the three layers are
-     spread, the tilted stack is about 1.22w wide and 0.8w tall. The rest of
-     the height is for the controls. */
-  --w: clamp(200px, min(100cqw / 1.22, (100cqh - 48px) / 0.82), 820px);
-  --g0: calc(var(--w) * 0.2);
-  --round: var(--pr, calc(var(--w) * 0.022));
   position: absolute;
   inset: 0;
+  /* 1800px: the script draws the ground through the same camera (PERSPECTIVE in hero-scene.tsx). */
   perspective: 1800px;
-  perspective-origin: 45% 45%;
+  perspective-origin: 50% calc(50% + var(--w) * 0.14);
 }
 .stage-space {
   position: absolute;
   left: 50%;
-  top: calc(50% - 22px + var(--w) * 0.12);
+  top: calc(50% + var(--w) * 0.14);
   width: var(--w);
   aspect-ratio: 2 / 1;
   margin: calc(var(--w) * -0.25) 0 0 calc(var(--w) * -0.5);
@@ -388,7 +416,7 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   transform: translate3d(var(--tx), var(--ty), 0) scale(var(--s)) rotateX(var(--rx)) rotateZ(var(--rz));
 }
 
-/* A soft shadow on the "floor" grounds the stack. */
+/* A soft shadow on the ground under the stack. */
 .ground {
   position: absolute;
   inset: -16% -12%;
@@ -404,7 +432,9 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   inset: 0;
   transform-style: preserve-3d;
   transform: translateZ(calc(var(--i) * var(--g0) * var(--spread)));
+  pointer-events: auto;
 }
+.scene.is-flying .layer { pointer-events: none; }
 .layer.is-dim { --ink: var(--line); }
 .layer-body {
   position: absolute;
@@ -447,11 +477,12 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
 .slide.is-leaving { transform: translateZ(calc(var(--g0) * -0.4)); }
 .deck.is-snapped .slide { transition: none; }
 .slide img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+/* A veil of the page colour: it holds the travelling plane back while it passes behind the type of the next section. */
 .slide::after { content: ""; position: absolute; inset: 0; background: var(--bg); opacity: var(--veil, 0); }
 .scene:not(.is-flying) .slide::after { transition: opacity 0.5s var(--ease); }
 .layer--interface.is-dim .slide::after { opacity: 0.55; }
 
-.layer--service .layer-body { background: color-mix(in srgb, var(--fg) 7%, transparent); }
+.layer--service .layer-body { background: color-mix(in srgb, var(--fg) 7%, var(--bg)); }
 .layer--service .grid { opacity: 0.5; }
 .layer--service .route { stroke: var(--accent); stroke-dasharray: 5 7; animation: route 1.4s linear infinite; }
 .layer--service rect { fill: var(--bg); }
@@ -461,24 +492,9 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   border-style: dashed;
   background:
     radial-gradient(circle, var(--ink) 1px, transparent 1.5px) 0 0 / calc(var(--w) * 0.05) calc(var(--w) * 0.05),
-    color-mix(in srgb, var(--fg) 4%, transparent);
+    color-mix(in srgb, var(--fg) 4%, var(--bg));
 }
 .layer--infrastructure rect, .layer--infrastructure circle { fill: var(--bg); }
-.ring {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 70%;
-  aspect-ratio: 1;
-  margin: -35% 0 0 -35%;
-  border: 1px solid var(--accent);
-  border-radius: 50%;
-  opacity: 0;
-  animation: ring 4.2s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
-}
-.ring:nth-child(2) { animation-delay: -1.4s; }
-.ring:nth-child(3) { animation-delay: -2.8s; }
-@keyframes ring { from { transform: scale(0.06); opacity: 0.9; } to { transform: scale(1); opacity: 0; } }
 
 .wire {
   position: absolute;
@@ -502,31 +518,22 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   from { transform: translateZ(0); }
   to { transform: translateZ(calc(var(--g0) * var(--spread) * 2)); }
 }
-.is-paused .packet, .is-paused .ring, .is-paused .route { animation-play-state: paused; }
+.is-paused .packet, .is-paused .route { animation-play-state: paused; }
 
 /* The real image stays out of the way while the travelling plane is on its way to it. */
 .frame.is-landing { visibility: hidden; }
 
-.scene-ui {
-  position: absolute;
-  inset: auto 0 0 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 14px;
-  color: var(--muted);
-  opacity: var(--ui);
-}
-.scene-link { color: var(--fg); white-space: nowrap; }
-.scene-link:hover { color: var(--accent); }
+.stage-ui { position: absolute; right: 0; bottom: 0; pointer-events: auto; transition: opacity 0.4s var(--ease); }
+/* Out of the way while the plane is travelling down the page. */
+.scene:is(.is-flying, .is-landed) .stage-ui { opacity: 0; pointer-events: none; }
 .scene-toggle {
-  flex: none;
   display: grid;
   place-items: center;
   width: 32px;
   height: 32px;
   border: 1px solid var(--line);
   border-radius: 50%;
+  background: var(--glass);
   color: var(--muted);
   transition: color 0.3s var(--ease), border-color 0.3s var(--ease);
 }
@@ -935,11 +942,6 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
 /* ---------- Responsive ---------- */
 
 @media (max-width: 1020px) {
-  .hero-copy, .hero-scene { grid-column: 1 / -1; }
-  /* A definite height: container units read 0 from a height that only comes from min-height. */
-  .hero-scene { height: clamp(300px, 56vw, 520px); min-height: 0; }
-  .stage { --w: clamp(180px, min(100cqw / 1.22, (100cqh - 48px) / 0.82), 820px); }
-
   .work-index { display: none; }
   .work-list { grid-column: 1 / -1; }
   .about-note { grid-column: 1 / span 5; }
@@ -953,18 +955,16 @@ html.js.is-ready .curtain { transform: translateY(-101%); visibility: hidden; }
   .dock a { padding: 10px 14px; }
   .top-percent { display: none; }
 
-  .hero { padding-top: 96px; }
+  .hero { --hero-top: 96px; --hero-bottom: 88px; }
   .hero-meta { grid-template-columns: 1fr auto; }
   .hero-meta > :nth-child(2) { display: none; }
   .name { font-size: 18.7vw; line-height: 0.84; }
   .name-line { white-space: normal; }
   .name-word { display: block; width: max-content; }
+  /* What a first screen leaves once the two-line name and the stacked foot are in. */
+  .scene { --scene-min: clamp(170px, 100svh - 430px - 31vw, 80vw); --w: min(60vw, var(--scene-min) / 0.86); }
+  .hero-foot { flex-direction: column; align-items: stretch; }
   .hero-actions .pill { flex: 1 1 auto; }
-  .hero-scene { height: 92vw; margin-top: 8px; }
-  .stage { --w: clamp(180px, min(100cqw / 1.22, (100cqh - 56px) / 0.82), 820px); }
-  .stage-space { left: 50%; }
-  .scene-link { display: none; }
-
 
   .about-row, .contact-row { grid-template-columns: 1fr; gap: 40px; }
   .about-note, .toolkit, .contact-note, .contact-row > div { grid-column: 1 / -1; }

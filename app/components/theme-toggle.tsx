@@ -55,7 +55,8 @@ export function ThemeToggle() {
     if (barWidth > 0) root.dataset.vtHold = next === "dark" ? "light" : "dark";
 
     // Going dark, the light page closes in on the button instead of the dark one opening from it.
-    if (next === "dark") root.dataset.vt = "close";
+    // The attribute is also how moving things (the hero's ring) know to hold still while the two themes share the screen.
+    root.dataset.vt = next === "dark" ? "close" : "open";
     const transition = document.startViewTransition(apply);
     transition.ready.then(() => {
       if (!root.dataset.vtHold) return;
